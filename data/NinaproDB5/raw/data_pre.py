@@ -13,13 +13,13 @@ def update_data_config():
     # target channel list
     temp_dict['channel_list'] = list(range(16))
     # target class list
-    temp_dict['class_list'] = range(list(1,13))
+    temp_dict['class_list'] = list(range(1,13))
     # target exercise
     temp_dict['ex_num'] = 1
     # target subject list
-    temp_dict['sb_list'] = range(list(1,11))
+    temp_dict['sb_list'] = list(range(1,11))
     # target trial list
-    temp_dict['trial_list'] = range(list(1,7))
+    temp_dict['trial_list'] = list(range(1,7))
     # sliding window length: wl (Unit: samples)
     # example:
     # if taking 250ms as a window and sampling frequency of data is 200Hz,
