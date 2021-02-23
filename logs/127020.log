@@ -1,0 +1,8 @@
+Sun 24 Jan 12:25:43 GMT 2021
+Traceback (most recent call last):
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 57, in <module>
+    run_training(1,params,hyperparams,save_model=False)
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 26, in run_training
+    model = utilis.Model()
+NameError: name 'utilis' is not defined
+Sun 24 Jan 12:25:44 GMT 2021

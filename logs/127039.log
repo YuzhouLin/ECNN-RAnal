@@ -1,0 +1,9 @@
+Sun 24 Jan 13:59:42 GMT 2021
+Number Parameters:  1191596
+Traceback (most recent call last):
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 67, in <module>
+    run_training(1,params,hyperparams,save_model=True)
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 44, in run_training
+    train_loss = train_loss['train']
+UnboundLocalError: local variable 'train_loss' referenced before assignment
+Sun 24 Jan 13:59:44 GMT 2021

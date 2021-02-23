@@ -1,0 +1,110 @@
+Sun 24 Jan 18:50:02 GMT 2021
+[32m[I 2021-02-23 18:50:03,527][0m Using an existing study with name 'SB1_STUDY' instead of creating a new one.[0m
+[33m[W 2021-02-23 18:50:28,250][0m Trial 1 failed because of the following error: IndexError('pop index out of range')
+Traceback (most recent call last):
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/optuna/_optimize.py", line 211, in _run_trial
+    value_or_values = func(trial)
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 123, in <lambda>
+    study.optimize(lambda trial: objective(trial,params), n_trials=25)
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 81, in objective
+    temp_loss = run_training(f_,params,save_model=False)
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 21, in run_training
+    valid_trial_list = [temp_trial_list.pop(fold)]
+IndexError: pop index out of range[0m
+Number Parameters:  1191596
+fold:1, epoch:1, train_loss:0.9936299547553062, valid_loss:0.932946789264679
+fold:1, epoch:2, train_loss:0.9310371776421865, valid_loss:0.9276791453361511
+fold:1, epoch:3, train_loss:0.8864106933275858, valid_loss:0.9078065395355225
+fold:1, epoch:4, train_loss:0.8695325826605161, valid_loss:0.8412839531898498
+fold:1, epoch:5, train_loss:0.8470097358028094, valid_loss:0.8617040038108825
+fold:1, epoch:6, train_loss:0.845096617937088, valid_loss:0.8994794726371765
+fold:1, epoch:7, train_loss:0.8373214999834696, valid_loss:0.8569581747055054
+fold:1, epoch:8, train_loss:0.8268485267957052, valid_loss:0.9770524024963378
+fold:1, epoch:9, train_loss:0.8315024450421333, valid_loss:0.8884436964988709
+fold:1, epoch:10, train_loss:0.83236496647199, valid_loss:0.8446043848991394
+fold:1, epoch:11, train_loss:0.8219139749805132, valid_loss:0.8925220608711243
+fold:1, epoch:12, train_loss:0.8177845229705175, valid_loss:0.8993321537971497
+fold:1, epoch:13, train_loss:0.811980165541172, valid_loss:0.8383619785308838
+fold:1, epoch:14, train_loss:0.807544656097889, valid_loss:0.8363086819648743
+fold:1, epoch:15, train_loss:0.8069095313549042, valid_loss:0.8340784788131714
+fold:1, epoch:16, train_loss:0.8020014787713686, valid_loss:0.9384097576141357
+fold:1, epoch:17, train_loss:0.7992293238639832, valid_loss:0.8764327645301819
+fold:1, epoch:18, train_loss:0.79404250284036, valid_loss:0.8590857028961182
+Number Parameters:  1191596
+fold:2, epoch:1, train_loss:0.954077863174936, valid_loss:0.9223756690820059
+fold:2, epoch:2, train_loss:0.8714878351792045, valid_loss:0.8264363904794058
+fold:2, epoch:3, train_loss:0.8404762148857117, valid_loss:0.8158974448839823
+fold:2, epoch:4, train_loss:0.812753765479378, valid_loss:0.807142823934555
+fold:2, epoch:5, train_loss:0.8153099339941273, valid_loss:0.7970628341039022
+fold:2, epoch:6, train_loss:0.7925957933716152, valid_loss:0.8223522305488586
+fold:2, epoch:7, train_loss:0.8001178088395492, valid_loss:0.7814976672331492
+fold:2, epoch:8, train_loss:0.7965212593907895, valid_loss:0.8223366936047872
+fold:2, epoch:9, train_loss:0.780180011106574, valid_loss:0.7700911362965902
+fold:2, epoch:10, train_loss:0.7793716295905735, valid_loss:0.7587280869483948
+fold:2, epoch:11, train_loss:0.7836330869923467, valid_loss:0.8251755038897196
+fold:2, epoch:12, train_loss:0.7808928463769995, valid_loss:0.7709717750549316
+fold:2, epoch:13, train_loss:0.7720247869906218, valid_loss:0.8951539794603983
+fold:2, epoch:14, train_loss:0.7709561171738998, valid_loss:0.8647777040799459
+fold:2, epoch:15, train_loss:0.772366350111754, valid_loss:0.7765255669752756
+fold:2, epoch:16, train_loss:0.7680693864822388, valid_loss:0.8288368980089823
+fold:2, epoch:17, train_loss:0.7608938735464345, valid_loss:0.7919679582118988
+fold:2, epoch:18, train_loss:0.7590660349182461, valid_loss:0.7762362758318583
+fold:2, epoch:19, train_loss:0.7607275739960049, valid_loss:0.7800647914409637
+Number Parameters:  1191596
+fold:3, epoch:1, train_loss:0.9612348442492278, valid_loss:0.8908889989058176
+fold:3, epoch:2, train_loss:0.8937337035718171, valid_loss:0.8584326306978861
+fold:3, epoch:3, train_loss:0.8542765482612278, valid_loss:0.8537820279598236
+fold:3, epoch:4, train_loss:0.8155603486558666, valid_loss:0.7975365420182546
+fold:3, epoch:5, train_loss:0.7907239302344944, valid_loss:0.8248727917671204
+fold:3, epoch:6, train_loss:0.7772074782330057, valid_loss:0.8993698259194692
+fold:3, epoch:7, train_loss:0.7600664159525996, valid_loss:0.8598675032456716
+fold:3, epoch:8, train_loss:0.755026304203531, valid_loss:0.9945201476414999
+fold:3, epoch:9, train_loss:0.7469686295675195, valid_loss:0.9508565465609232
+fold:3, epoch:10, train_loss:0.7502097850260527, valid_loss:0.943273921807607
+fold:3, epoch:11, train_loss:0.7474088202352109, valid_loss:0.9348169267177582
+fold:3, epoch:12, train_loss:0.7252655184787252, valid_loss:0.9650610685348511
+fold:3, epoch:13, train_loss:0.7191249780032946, valid_loss:0.9905203878879547
+fold:3, epoch:14, train_loss:0.7263691606728927, valid_loss:1.11953799923261
+fold:3, epoch:15, train_loss:0.7141749962516453, valid_loss:1.0657279590765636
+Number Parameters:  1191596
+fold:4, epoch:1, train_loss:0.9944190581639608, valid_loss:0.9811962962150573
+fold:4, epoch:2, train_loss:0.979825901488463, valid_loss:0.9570337772369385
+fold:4, epoch:3, train_loss:0.9528741513689359, valid_loss:0.937001895904541
+fold:4, epoch:4, train_loss:0.9440207555890083, valid_loss:0.9357796311378479
+fold:4, epoch:5, train_loss:0.9418602858980497, valid_loss:0.9501013159751892
+fold:4, epoch:6, train_loss:0.9383076007167498, valid_loss:0.9296255826950073
+fold:4, epoch:7, train_loss:0.9365817581613859, valid_loss:0.9285711288452149
+fold:4, epoch:8, train_loss:0.9340944488843282, valid_loss:0.9261402726173401
+fold:4, epoch:9, train_loss:0.9605091934402784, valid_loss:0.9309120178222656
+fold:4, epoch:10, train_loss:0.9342164372404417, valid_loss:0.9281064987182617
+fold:4, epoch:11, train_loss:0.9360233694314957, valid_loss:0.9256663203239441
+fold:4, epoch:12, train_loss:0.9265259479482969, valid_loss:0.9739044547080994
+fold:4, epoch:13, train_loss:0.9243502020835876, valid_loss:0.9598350763320923
+fold:4, epoch:14, train_loss:0.9331384797890981, valid_loss:0.9410903811454773
+fold:4, epoch:15, train_loss:0.9309679667154948, valid_loss:0.9340714931488037
+fold:4, epoch:16, train_loss:0.9260880028208097, valid_loss:0.9292814493179321
+fold:4, epoch:17, train_loss:0.9299771140019099, valid_loss:0.9203662633895874
+fold:4, epoch:18, train_loss:0.9260132362445196, valid_loss:0.934086275100708
+fold:4, epoch:19, train_loss:0.9246178815762202, valid_loss:0.9384790658950806
+fold:4, epoch:20, train_loss:0.9491837074359258, valid_loss:0.9279365777969361
+Traceback (most recent call last):
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 123, in <module>
+    study.optimize(lambda trial: objective(trial,params), n_trials=25)
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/optuna/study.py", line 385, in optimize
+    show_progress_bar=show_progress_bar,
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/optuna/_optimize.py", line 73, in _optimize
+    progress_bar=progress_bar,
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/optuna/_optimize.py", line 164, in _optimize_sequential
+    trial = _run_trial(study, func, catch)
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/optuna/_optimize.py", line 262, in _run_trial
+    raise func_err
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/optuna/_optimize.py", line 211, in _run_trial
+    value_or_values = func(trial)
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 123, in <lambda>
+    study.optimize(lambda trial: objective(trial,params), n_trials=25)
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 81, in objective
+    temp_loss = run_training(f_,params,save_model=False)
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 21, in run_training
+    valid_trial_list = [temp_trial_list.pop(fold)]
+IndexError: pop index out of range
+Sun 24 Jan 18:50:28 GMT 2021

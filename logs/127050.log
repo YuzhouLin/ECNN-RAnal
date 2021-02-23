@@ -1,0 +1,7 @@
+Sun 24 Jan 18:46:29 GMT 2021
+[32m[I 2021-02-23 18:46:38,834][0m A new study created in RDB with name: SB1_STUDY[0m
+Traceback (most recent call last):
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 123, in <module>
+    study.optimize(objective(params), n_trials=25)
+TypeError: objective() missing 1 required positional argument: 'params'
+Sun 24 Jan 18:46:39 GMT 2021

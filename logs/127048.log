@@ -1,0 +1,17 @@
+Sun 24 Jan 17:05:56 GMT 2021
+Number Parameters:  1191596
+Traceback (most recent call last):
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 85, in <module>
+    run_training(1,params,save_model=True)
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 53, in run_training
+    train_losses = eng.train(trainloaders,loss_params) 
+  File "/cluster/home/cug/yl339/current_proj/src/utils.py", line 48, in train
+    loss = self.criterion(outputs,targets,loss_params)
+  File "/cluster/home/cug/yl339/current_proj/src/utils.py", line 29, in criterion
+    loss = edl_mse_loss(outputs,targets,loss_params)
+  File "/cluster/home/cug/yl339/current_proj/src/helps.py", line 139, in edl_mse_loss
+    loss = torch.mean(mse_loss(y.float(), alpha, params))
+  File "/cluster/home/cug/yl339/current_proj/src/helps.py", line 130, in mse_loss
+    kl_div = kl_divergence(kl_alpha, params['class_n'], device=device)
+NameError: name 'device' is not defined
+Sun 24 Jan 17:05:59 GMT 2021

@@ -1,0 +1,9 @@
+Sun 24 Jan 17:04:15 GMT 2021
+Number Parameters:  1191596
+Traceback (most recent call last):
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 85, in <module>
+    run_training(1,params,save_model=True)
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 52, in run_training
+    loss.params['epoch_num'] = epoch
+NameError: name 'loss' is not defined
+Sun 24 Jan 17:04:19 GMT 2021

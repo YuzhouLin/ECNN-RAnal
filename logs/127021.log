@@ -1,0 +1,10 @@
+Sun 24 Jan 12:26:10 GMT 2021
+Traceback (most recent call last):
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 57, in <module>
+    run_training(1,params,hyperparams,save_model=False)
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 26, in run_training
+    model = utils.Model()
+  File "/cluster/home/cug/yl339/current_proj/src/utils.py", line 70, in __init__
+    super(Net, self).__init__()
+NameError: name 'Net' is not defined
+Sun 24 Jan 12:26:11 GMT 2021

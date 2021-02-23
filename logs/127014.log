@@ -1,0 +1,10 @@
+Sun 24 Jan 12:05:22 GMT 2021
+Traceback (most recent call last):
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 54, in <module>
+    run_training(1,params,hyperparams,save_model=False)
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 20, in run_training
+    train_loader = load_data_cnn(DATA_PATH,sb_n,train_trial_list,hyperparams['batch_size'])
+  File "/cluster/home/cug/yl339/current_proj/src/helps.py", line 20, in load_data_cnn
+    temp = pd.read_pickle(data_path+f'sb{sb_n}_trial{trial_n}.pkl')
+NameError: name 'trial_n' is not defined
+Sun 24 Jan 12:05:23 GMT 2021

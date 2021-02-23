@@ -1,0 +1,8 @@
+Sun 24 Jan 12:04:37 GMT 2021
+Traceback (most recent call last):
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 54, in <module>
+    run_training(1,params,hyperparams,save_model=False)
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 20, in run_training
+    train_loader = load_data_cnn(DATA_PATH,sb_n,trian_trial_list,hyperparams['batch_size'])
+NameError: name 'trian_trial_list' is not defined
+Sun 24 Jan 12:04:38 GMT 2021

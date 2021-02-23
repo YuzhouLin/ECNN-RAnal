@@ -1,0 +1,10 @@
+Sun 24 Jan 13:58:01 GMT 2021
+Number Parameters:  1191596
+1, 1, 0.012137054477238498, 0.006638328935268614
+Traceback (most recent call last):
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 64, in <module>
+    run_training(1,params,hyperparams,save_model=True)
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 45, in run_training
+    if valid_loss < best_loss:
+NameError: name 'valid_loss' is not defined
+Sun 24 Jan 13:58:04 GMT 2021

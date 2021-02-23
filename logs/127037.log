@@ -1,0 +1,9 @@
+Sun 24 Jan 13:56:10 GMT 2021
+Number Parameters:  1191596
+Traceback (most recent call last):
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 64, in <module>
+    run_training(1,params,hyperparams,save_model=True)
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 44, in run_training
+    print(f"{fold}, {epoch}, {train_loss['train']}, {train_loss[val]}")
+NameError: name 'val' is not defined
+Sun 24 Jan 13:56:14 GMT 2021

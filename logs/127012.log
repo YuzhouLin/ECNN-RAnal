@@ -1,0 +1,11 @@
+Sun 24 Jan 12:04:08 GMT 2021
+Traceback (most recent call last):
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 3, in <module>
+    import utils
+  File "/cluster/home/cug/yl339/current_proj/src/utils.py", line 5, in <module>
+    from helps import edl_mse_loss
+  File "/cluster/home/cug/yl339/current_proj/src/helps.py", line 136
+    return loss
+         ^
+SyntaxError: invalid syntax
+Sun 24 Jan 12:04:09 GMT 2021

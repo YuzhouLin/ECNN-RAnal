@@ -1,0 +1,9 @@
+Sun 24 Jan 13:25:20 GMT 2021
+Traceback (most recent call last):
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 5, in <module>
+    import utils
+  File "/cluster/home/cug/yl339/current_proj/src/utils.py", line 52
+    final_loss[phase = ]final_loss[phase] / len(data_loaders[phase].dataset)
+                     ^
+SyntaxError: invalid syntax
+Sun 24 Jan 13:25:21 GMT 2021

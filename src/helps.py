@@ -1,14 +1,17 @@
+import os
 import pickle
 import pandas as pd
 import numpy as np
 import torch
+from torch.utils.data import TensorDataset
+import torch.nn.functional as F
 
 def get_device():
     use_cuda = torch.cuda.is_available()
     device = torch.device("cuda:0" if use_cuda else "cpu")
     return device
 
-def one_hot_embedding(labels, num_classes=10):
+def one_hot_embedding(labels, num_classes):
     # Convert to One Hot Encoding
     y = torch.eye(num_classes)
     return y[labels]
@@ -16,8 +19,8 @@ def one_hot_embedding(labels, num_classes=10):
 def load_data_cnn(data_path, sb_n, trial_list, batch_size):
     X = [] # L*1*16(channels)*50(samples)
     Y = []
-    for t_n in trial_list:
-        temp = pd.read_pickle(data_path+f'sb{sb_n}_trial{trial_n}.pkl')
+    for trial_n in trial_list:
+        temp = pd.read_pickle(os.getcwd()+data_path+f'sb{sb_n}_trial{trial_n}.pkl')
         X.extend(temp['x'])
         Y.extend(temp['y'])
     data = TensorDataset(torch.from_numpy(np.array(X, dtype=np.float32)).permute(0,1,3,2),
@@ -74,7 +77,6 @@ def loglikelihood_loss(y, alpha, device=None):
 
 def mse_loss(y, alpha,params):
 
-epoch_num, num_classes, annealing_step, kl, device=None
     # if annealing_step = 0, no kl
     y = y.to(params['device']) # 256*12
     alpha = alpha.to(params['device']) #256*12
@@ -125,13 +127,14 @@ epoch_num, num_classes, annealing_step, kl, device=None
         #total_S = torch.sum(alpha,dim=1,keepdim=True)
         #print(total_S)
         #u = u*annealing_coef
-        kl_div = kl_divergence(kl_alpha, params['num_classes'], device=device)
+        kl_div = kl_divergence(kl_alpha, params['class_n'], device=params['device'])
         kl_div = annealing_coef * \
-            kl_divergence(kl_alpha, params['num_classes'], device=device)
+            kl_divergence(kl_alpha, params['class_n'], device=params['device'])
         #a = torch.tensor(0.8, dtype=torch.float32)
         return loglikelihood + kl_div #+ (1-p_t)*kl_div
 def edl_mse_loss(output, target, params):
     evidence = eval(params['evi_fun']+'_evidence(output)')
     alpha = evidence + 1
-    loss = torch.mean(mse_loss(target, alpha, params)
+    y = one_hot_embedding(target, params['class_n'])
+    loss = torch.mean(mse_loss(y.float(), alpha, params))
     return loss

@@ -1,0 +1,11 @@
+Sun 24 Jan 12:27:53 GMT 2021
+Number Parameters:  1191596
+Traceback (most recent call last):
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 58, in <module>
+    run_training(1,params,hyperparams,save_model=False)
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 36, in run_training
+    train_loss = eng.train(train_loader,params)
+  File "/cluster/home/cug/yl339/current_proj/src/utils.py", line 39, in train
+    for _, (inputs,targets) in enumerate(data_loaders[phase]):
+TypeError: 'DataLoader' object is not subscriptable
+Sun 24 Jan 12:27:55 GMT 2021

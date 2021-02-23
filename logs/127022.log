@@ -1,0 +1,9 @@
+Sun 24 Jan 12:26:41 GMT 2021
+Number Parameters:  1191596
+Traceback (most recent call last):
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 57, in <module>
+    run_training(1,params,hyperparams,save_model=False)
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 32, in run_training
+    best_loss = np.inf
+NameError: name 'np' is not defined
+Sun 24 Jan 12:26:47 GMT 2021

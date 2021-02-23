@@ -1,0 +1,35 @@
+Sun 24 Jan 18:49:04 GMT 2021
+[32m[I 2021-02-23 18:49:05,886][0m Using an existing study with name 'SB1_STUDY' instead of creating a new one.[0m
+[33m[W 2021-02-23 18:49:08,237][0m Trial 0 failed because of the following error: NameError("name 'optim' is not defined")
+Traceback (most recent call last):
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/optuna/_optimize.py", line 211, in _run_trial
+    value_or_values = func(trial)
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 123, in <lambda>
+    study.optimize(lambda trial: objective(trial,params), n_trials=25)
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 81, in objective
+    temp_loss = run_training(f_,params,save_model=False)
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 38, in run_training
+    optimizer = getattr(optim, params['optimizer_name'])(model.parameters(), lr=params['lr'])
+NameError: name 'optim' is not defined[0m
+Number Parameters:  1191596
+Traceback (most recent call last):
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 123, in <module>
+    study.optimize(lambda trial: objective(trial,params), n_trials=25)
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/optuna/study.py", line 385, in optimize
+    show_progress_bar=show_progress_bar,
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/optuna/_optimize.py", line 73, in _optimize
+    progress_bar=progress_bar,
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/optuna/_optimize.py", line 164, in _optimize_sequential
+    trial = _run_trial(study, func, catch)
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/optuna/_optimize.py", line 262, in _run_trial
+    raise func_err
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/optuna/_optimize.py", line 211, in _run_trial
+    value_or_values = func(trial)
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 123, in <lambda>
+    study.optimize(lambda trial: objective(trial,params), n_trials=25)
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 81, in objective
+    temp_loss = run_training(f_,params,save_model=False)
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 38, in run_training
+    optimizer = getattr(optim, params['optimizer_name'])(model.parameters(), lr=params['lr'])
+NameError: name 'optim' is not defined
+Sun 24 Jan 18:49:08 GMT 2021

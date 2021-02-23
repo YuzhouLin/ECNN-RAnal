@@ -1,0 +1,9 @@
+Sun 24 Jan 12:01:41 GMT 2021
+Traceback (most recent call last):
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 3, in <module>
+    import utils
+  File "/cluster/home/cug/yl339/current_proj/src/utils.py", line 68
+    def __init__(self, number_of_class=12, dropout,k_c=3):
+                ^
+SyntaxError: non-default argument follows default argument
+Sun 24 Jan 12:01:43 GMT 2021

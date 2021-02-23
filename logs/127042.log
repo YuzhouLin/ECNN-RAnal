@@ -1,0 +1,15 @@
+Sun 24 Jan 16:15:42 GMT 2021
+Number Parameters:  1191596
+Traceback (most recent call last):
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 65, in <module>
+    run_training(1,params,hyperparams,save_model=True)
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 42, in run_training
+    train_losses = eng.train(trainloaders,params) 
+  File "/cluster/home/cug/yl339/current_proj/src/utils.py", line 47, in train
+    loss = self.criterion(outputs,targets,loss_params)
+  File "/cluster/home/cug/yl339/current_proj/src/utils.py", line 29, in criterion
+    loss = edl_mse_loss(outputs,targets,loss_params)
+  File "/cluster/home/cug/yl339/current_proj/src/helps.py", line 135, in edl_mse_loss
+    evidence = eval(params['evi_fun']+'_evidence(output)')
+KeyError: 'evi_fun'
+Sun 24 Jan 16:15:46 GMT 2021

@@ -1,0 +1,14 @@
+Sun 24 Jan 12:10:13 GMT 2021
+Traceback (most recent call last):
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 54, in <module>
+    run_training(1,params,hyperparams,save_model=False)
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 20, in run_training
+    train_loader = load_data_cnn(DATA_PATH,sb_n,train_trial_list,hyperparams['batch_size'])
+  File "/cluster/home/cug/yl339/current_proj/src/helps.py", line 21, in load_data_cnn
+    temp = pd.read_pickle(os.getcwd()+data_path+f'sb{sb_n}_trial{trial_n}.pkl')
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/pandas/io/pickle.py", line 170, in read_pickle
+    f, fh = get_handle(fp_or_buf, "rb", compression=compression, is_text=False)
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/pandas/io/common.py", line 434, in get_handle
+    f = open(path_or_buf, mode)
+FileNotFoundError: [Errno 2] No such file or directory: '/cluster/home/cug/yl339/current_proj../data/NinaProDB5/raw/sb1_trial1.pkl'
+Sun 24 Jan 12:10:14 GMT 2021

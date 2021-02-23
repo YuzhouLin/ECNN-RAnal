@@ -1,0 +1,6 @@
+Sun 24 Jan 11:25:58 GMT 2021
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 44
+    inner_nested_cv_list =
+                         ^
+SyntaxError: invalid syntax
+Sun 24 Jan 11:25:59 GMT 2021

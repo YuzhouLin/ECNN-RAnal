@@ -1,0 +1,18 @@
+Sun 24 Jan 17:04:51 GMT 2021
+Number Parameters:  1191596
+Traceback (most recent call last):
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 85, in <module>
+    run_training(1,params,save_model=True)
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 53, in run_training
+    train_losses = eng.train(trainloaders,loss_params) 
+  File "/cluster/home/cug/yl339/current_proj/src/utils.py", line 48, in train
+    loss = self.criterion(outputs,targets,loss_params)
+  File "/cluster/home/cug/yl339/current_proj/src/utils.py", line 29, in criterion
+    loss = edl_mse_loss(outputs,targets,loss_params)
+  File "/cluster/home/cug/yl339/current_proj/src/helps.py", line 135, in edl_mse_loss
+    evidence = eval(params['evi_fun']+'_evidence(output)')
+  File "<string>", line 1, in <module>
+  File "/cluster/home/cug/yl339/current_proj/src/helps.py", line 35, in relu_evidence
+    return F.relu(y)
+NameError: name 'F' is not defined
+Sun 24 Jan 17:04:54 GMT 2021

@@ -31,24 +31,29 @@ class Engine:
             loss_fun = nn.CrossEntropyLoss()
             loss = loss_fun(outputs,targets)
         return loss
+    
     def train(self, data_loaders, loss_params):
+        final_loss = {}
         for phase in ['train','val']:
             train_flag = phase == 'train'
             self.model.train() if train_flag else self.model.eval()
-            final_loss = 0
+            final_loss[phase] = 0.0
+            data_n = 0.0
             for _, (inputs,targets) in enumerate(data_loaders[phase]):
                 inputs = inputs.to(self.device)
-                targets = targets.to(self.device)
+                targets = targets.to(self.device) # (batch_size,)
                 self.optimizer.zero_grad()
                 with torch.set_grad_enabled(train_flag):
-                    outputs = self.model(inputs)
-                    loss = self.criterion(targets, outputs, loss_params)
+                    outputs = self.model(inputs) # (batch_size,class_n) 
+                    loss = self.criterion(outputs,targets,loss_params)
                     if train_flag:
                         loss.backward()
                         self.optimizer.step()
-                final_loss += loss.item()
-        return final_loss / len(data_loaders[phase].dataset)
-
+                final_loss[phase] += loss.item()*inputs.size(0)
+                data_n += inputs.size(0)
+            final_loss[phase] = final_loss[phase] / data_n
+        return final_loss
+    
     def test(self, data_loader):
         self.model.eval()
         final_loss = 0
@@ -62,12 +67,10 @@ class Engine:
             final_loss += loss.item()
         return final_loss / len(data_loader)
 
-
-
 class Model(nn.Module):
-    def __init__(self, number_of_class=12, dropout,k_c=3):
+    def __init__(self, number_of_class=12, dropout=0.5,k_c=3):
         # k_c: kernel size of channel
-        super(Net, self).__init__()
+        super(Model, self).__init__()
         #self._batch_norm0 = nn.BatchNorm2d(1)
         self._conv1 = nn.Conv2d(1, 32, kernel_size=(k_c, 5))
         self._batch_norm1 = nn.BatchNorm2d(32)
@@ -91,7 +94,6 @@ class Model(nn.Module):
         self._output = nn.Linear(500, number_of_class)
         self.initialize_weights()
 
-        #print(self)
 
         print("Number Parameters: ", self.get_n_params())
 
@@ -125,5 +127,4 @@ class Model(nn.Module):
         flatten_tensor = pool2.view(pool2.size(0),-1)
         fc1 = self._dropout3(self._prelu3(self._batch_norm3(self._fc1(flatten_tensor))))
         output = self._output(fc1)
-        #return F.log_softmax(output, dim=1)
         return output

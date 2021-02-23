@@ -1,0 +1,11 @@
+Sun 24 Jan 13:25:52 GMT 2021
+Number Parameters:  1191596
+Traceback (most recent call last):
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 64, in <module>
+    run_training(1,params,hyperparams,save_model=True)
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 42, in run_training
+    train_loss = eng.train(trainloaders,params)
+  File "/cluster/home/cug/yl339/current_proj/src/utils.py", line 38, in train
+    final_loss[phase] = 0.0
+NameError: name 'final_loss' is not defined
+Sun 24 Jan 13:25:54 GMT 2021

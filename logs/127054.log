@@ -1,0 +1,77 @@
+Sun 24 Jan 20:00:14 GMT 2021
+Traceback (most recent call last):
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/sqlalchemy/engine/base.py", line 1244, in _execute_context
+    cursor, statement, parameters, context
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/sqlalchemy/engine/default.py", line 550, in do_execute
+    cursor.execute(statement, parameters)
+sqlite3.IntegrityError: UNIQUE constraint failed: studies.study_name
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/optuna/storages/_rdb/storage.py", line 211, in create_new_study
+    session.add(study)
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/contextlib.py", line 119, in __exit__
+    next(self.gen)
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/optuna/storages/_rdb/storage.py", line 53, in _create_scoped_session
+    session.commit()
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/sqlalchemy/orm/session.py", line 1027, in commit
+    self.transaction.commit()
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/sqlalchemy/orm/session.py", line 494, in commit
+    self._prepare_impl()
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/sqlalchemy/orm/session.py", line 473, in _prepare_impl
+    self.session.flush()
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/sqlalchemy/orm/session.py", line 2459, in flush
+    self._flush(objects)
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/sqlalchemy/orm/session.py", line 2597, in _flush
+    transaction.rollback(_capture_exception=True)
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/sqlalchemy/util/langhelpers.py", line 68, in __exit__
+    compat.reraise(exc_type, exc_value, exc_tb)
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/sqlalchemy/util/compat.py", line 154, in reraise
+    raise value
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/sqlalchemy/orm/session.py", line 2557, in _flush
+    flush_context.execute()
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/sqlalchemy/orm/unitofwork.py", line 422, in execute
+    rec.execute(self)
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/sqlalchemy/orm/unitofwork.py", line 589, in execute
+    uow,
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/sqlalchemy/orm/persistence.py", line 245, in save_obj
+    insert,
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/sqlalchemy/orm/persistence.py", line 1138, in _emit_insert_statements
+    statement, params
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/sqlalchemy/engine/base.py", line 988, in execute
+    return meth(self, multiparams, params)
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/sqlalchemy/sql/elements.py", line 287, in _execute_on_connection
+    return connection._execute_clauseelement(self, multiparams, params)
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/sqlalchemy/engine/base.py", line 1107, in _execute_clauseelement
+    distilled_params,
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/sqlalchemy/engine/base.py", line 1248, in _execute_context
+    e, statement, parameters, cursor, context
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/sqlalchemy/engine/base.py", line 1466, in _handle_dbapi_exception
+    util.raise_from_cause(sqlalchemy_exception, exc_info)
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/sqlalchemy/util/compat.py", line 399, in raise_from_cause
+    reraise(type(exception), exception, tb=exc_tb, cause=cause)
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/sqlalchemy/util/compat.py", line 153, in reraise
+    raise value.with_traceback(tb)
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/sqlalchemy/engine/base.py", line 1244, in _execute_context
+    cursor, statement, parameters, context
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/sqlalchemy/engine/default.py", line 550, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.IntegrityError: (sqlite3.IntegrityError) UNIQUE constraint failed: studies.study_name
+[SQL: INSERT INTO studies (study_name) VALUES (?)]
+[parameters: ('SB1_STUDY',)]
+(Background on this error at: http://sqlalche.me/e/gkpj)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 120, in <module>
+    load_if_exists=False,
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/optuna/study.py", line 1057, in create_study
+    study_id = storage.create_new_study(study_name)
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/optuna/storages/_cached_storage.py", line 76, in create_new_study
+    study_id = self._backend.create_new_study(study_name)
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/optuna/storages/_rdb/storage.py", line 217, in create_new_study
+    "`--skip-if-exists` flag (for CLI).".format(study_name)
+optuna.exceptions.DuplicatedStudyError: Another study with name 'SB1_STUDY' already exists. Please specify a different name, or reuse the existing one by setting `load_if_exists` (for Python API) or `--skip-if-exists` flag (for CLI).
+Sun 24 Jan 20:00:16 GMT 2021

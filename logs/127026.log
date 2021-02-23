@@ -1,0 +1,21 @@
+Sun 24 Jan 12:30:07 GMT 2021
+Number Parameters:  1191596
+Traceback (most recent call last):
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 64, in <module>
+    run_training(1,params,hyperparams,save_model=False)
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 42, in run_training
+    train_loss = eng.train(trainloaders,params)
+  File "/cluster/home/cug/yl339/current_proj/src/utils.py", line 45, in train
+    loss = self.criterion(targets, outputs, loss_params)
+  File "/cluster/home/cug/yl339/current_proj/src/utils.py", line 32, in criterion
+    loss = loss_fun(outputs,targets)
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/torch/nn/modules/module.py", line 532, in __call__
+    result = self.forward(*input, **kwargs)
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/torch/nn/modules/loss.py", line 916, in forward
+    ignore_index=self.ignore_index, reduction=self.reduction)
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/torch/nn/functional.py", line 2021, in cross_entropy
+    return nll_loss(log_softmax(input, 1), target, weight, None, ignore_index, None, reduction)
+  File "/cluster/home/cug/yl339/anaconda2/envs/py3/lib/python3.7/site-packages/torch/nn/functional.py", line 1317, in log_softmax
+    ret = input.log_softmax(dim)
+IndexError: Dimension out of range (expected to be in range of [-1, 0], but got 1)
+Sun 24 Jan 12:30:09 GMT 2021

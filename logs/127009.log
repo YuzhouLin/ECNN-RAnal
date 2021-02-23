@@ -1,0 +1,9 @@
+Sun 24 Jan 11:50:41 GMT 2021
+Traceback (most recent call last):
+  File "/cluster/home/cug/yl339/current_proj/src/train.py", line 3, in <module>
+    import utils
+  File "/cluster/home/cug/yl339/current_proj/src/utils.py", line 27
+    loss =
+         ^
+SyntaxError: invalid syntax
+Sun 24 Jan 11:50:43 GMT 2021
