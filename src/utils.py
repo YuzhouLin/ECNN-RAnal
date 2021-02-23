@@ -2,6 +2,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from helps import edl_mse_loss
 
 class NinaProDataset:
     def __init__(self,features,targets):
@@ -23,23 +24,32 @@ class Engine:
         self.optimizer = optimizer
 
     @staticmethod
-    def loss_fn(targets, outputs):
-        loss =
-        return
-    def train(self, data_loader):
-        self.model.train()
-        final_loss = 0
-        for data in data_loader:
-            self.optimizer.zero_grad()
-            inputs = data['x'].to(self.device)
-            targets = data['y'].to(self.device)
-            outpus = self.model(inputs)
-            loss = self.loss_fn(targets, outputs)
-            self.optimizer.step()
-            final_loss += loss.item()
-        return final_loss / len(data_loader)
+    def criterion(outputs, targets, loss_params):# loss function
+        if loss_params['edl']:
+            loss = edl_mse_loss(outputs,targets,loss_params)
+        else:
+            loss_fun = nn.CrossEntropyLoss()
+            loss = loss_fun(outputs,targets)
+        return loss
+    def train(self, data_loaders, loss_params):
+        for phase in ['train','val']:
+            train_flag = phase == 'train'
+            self.model.train() if train_flag else self.model.eval()
+            final_loss = 0
+            for _, (inputs,targets) in enumerate(data_loaders[phase]):
+                inputs = inputs.to(self.device)
+                targets = targets.to(self.device)
+                self.optimizer.zero_grad()
+                with torch.set_grad_enabled(train_flag):
+                    outputs = self.model(inputs)
+                    loss = self.criterion(targets, outputs, loss_params)
+                    if train_flag:
+                        loss.backward()
+                        self.optimizer.step()
+                final_loss += loss.item()
+        return final_loss / len(data_loaders[phase].dataset)
 
-    def evaluate(self, data_loader):
+    def test(self, data_loader):
         self.model.eval()
         final_loss = 0
         for data in data_loader:

@@ -1,13 +1,13 @@
 import torch
 import pandas as pd
-import utilis
+import utils
 import pickle
 from helps import load_data_cnn, get_device
 
 DEVICE = get_device()
 EPOCHS = 1
 TRIAL_LIST = list(range(1,7))
-
+DATA_PATH = '../data/NinaProDB5/raw/'
 
 def run_training(fold,params,hyperparams,save_model):
     # load_data
@@ -17,8 +17,8 @@ def run_training(fold,params,hyperparams,save_model):
 
     # Get the train data
 
-    train_loader = load_data_cnn(sb_n,trian_trial_list,hyperparams['batch_size'])
-    valid_loader = load_data_cnn(sb_n,valid_trial_list,hyperparams['batch_size'])
+    train_loader = load_data_cnn(DATA_PATH,sb_n,trian_trial_list,hyperparams['batch_size'])
+    valid_loader = load_data_cnn(DATA_PATH,sb_n,valid_trial_list,hyperparams['batch_size'])
 
     model = utilis.Model()
     model.to(DEVICE)
