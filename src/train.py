@@ -1,3 +1,5 @@
+import argparse
+import os
 import torch
 import numpy as np
 #import torch.optim as optim
@@ -8,6 +10,10 @@ from helps import load_data_cnn, get_device
 import optuna
 from optuna.samplers import TPESampler
 from optuna.pruners import MedianPruner
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-edl','--edl_used',help = 'if used edl?',action = 'store_true')
+args = parser.parse_args()
 
 
 DEVICE = get_device()
@@ -72,9 +78,11 @@ def objective(trial,params):
     ## Update the params for tuning with cross validation
     params['optimizer_name'] = trial.suggest_categorical("optimizer", ["Adam", "RMSprop", "SGD"])
     params['lr'] = trial.suggest_loguniform("lr", 1e-3, 1e-2)
-    params['evi_fun'] =  trial.suggest_categorical("evi_fun", ["relu", "softplus", "exp"])
-    params['kl'] = trial.suggest_int("KL",0,1,step=1)
-    params['batch_size'] =  trial.suggest_int("batch_size", 128, 256, step = 128)   
+    params['batch_size'] =  trial.suggest_int("batch_size", 128, 256, step = 128)
+    if params['edl']:
+        params['evi_fun'] =  trial.suggest_categorical("evi_fun", ["relu", "softplus", "exp"])
+        params['kl'] = trial.suggest_int("KL",0,1,step=1)
+        #params['annealing_step'] = trial.suggest_int("annealing_step",10,30,step=10)
 
     all_losses = []
     for f_ in range(5):
@@ -84,13 +92,13 @@ def objective(trial,params):
     return np.mean(all_losses)
 
 if __name__ == "__main__":
-    sb_n = 1
+    #sb_n = 1
     test_trial_list = [5]
     
-    edl_used = True
+    edl_used = args.edl_used
 
     params = {
-        'sb_n': sb_n,
+        #'sb_n': sb_n,
         'test_trial_list': test_trial_list,
         'class_n': 12,
         'batch_size': 128,
@@ -106,28 +114,36 @@ if __name__ == "__main__":
 
     #run_training(1,params,save_model=False)
 
-    sampler = TPESampler()
-    study = optuna.create_study(
-        direction="minimize",  # maximaze or minimaze our objective
-        sampler=sampler,  # parametrs sampling strategy
-        pruner=MedianPruner(
-            n_startup_trials=15,
-            n_warmup_steps=5,  # let's say num epochs
-            interval_steps=2,
-        ),
-        study_name='SB1_STUDY2',
-        storage="sqlite:///example.db",  # storing study results, other storages are available too, see documentation.
-        load_if_exists=False,
-    )
+    for sb_n in range(1,11):
+        params['sb_n'] = sb_n
+        study_path = f'study/ecnn/sb{sb_n}' if edl_used else f'study/cnn/sb{sb_n}'
     
-    study.optimize(lambda trial: objective(trial,params), n_trials=25)
-    print("Number of finished trials: ", len(study.trials))
+        if not os.path.exists(study_path):
+            os.makedirs(study_path)
 
-    print("Best trial:")
-    trial = study.best_trial
+        sampler = TPESampler()
+        study = optuna.create_study(
+            direction="minimize",  # maximaze or minimaze our objective
+            sampler=sampler,  # parametrs sampling strategy
+            pruner=MedianPruner(
+                n_startup_trials=15,
+                n_warmup_steps=5,  # let's say num epochs
+                interval_steps=2,
+            ),
+            study_name='STUDY',
+            storage="sqlite:///"+study_path+"/temp.db",  # storing study results, other storages are available too, see documentation.
+            load_if_exists=True
+        )
+        
+        study.optimize(lambda trial: objective(trial,params), n_trials=25)
+        
+        print("Number of finished trials: ", len(study.trials))
 
-    print("  Value: ", trial.value)
+        print("Best trial:")
+        trial = study.best_trial
 
-    print("  Params: ")
-    for key, value in trial.params.items():
-        print("    {}: {}".format(key, value))
+        print("  Value: ", trial.value)
+
+        print("  Params: ")
+        for key, value in trial.params.items():
+            print("    {}: {}".format(key, value))
