@@ -31,7 +31,19 @@ class Engine:
             loss_fun = nn.CrossEntropyLoss()
             loss = loss_fun(outputs,targets)
         return loss
-    
+   
+    @staticmethod
+    def cal_recall(outputs, targets):
+        _, true_class_n = np.unique(targets, return_counts=True)
+        pred = outputs.argmax(dim=1, keepdim=True)
+        recall = []
+        for class_index, class_n in enumerate(true_class_n):
+            true_each_class = targets == class_index
+            pred_result_each_class = np.logical_and(preds, true_each_class)
+            recall.append(np.sum(pred_result_each_class)/class_n)
+        return recall
+
+
     def train(self, data_loaders, loss_params):
         final_loss = {}
         for phase in ['train','val']:
@@ -53,22 +65,39 @@ class Engine:
                 data_n += inputs.size(0)
             final_loss[phase] = final_loss[phase] / data_n
         return final_loss
-    
-    def test(self, data_loader):
+   
+    def re_train(self, data_loader, loss_params):
+        final_loss = 0.0
+        self.model.train()
+        data_n = 0.0
+        for _, (inputs,targets) in enumerate(data_loader):
+            inputs = inputs.to(self.device)
+            targets = targets.to(self.device)
+            self.optimizer.zero_grad()
+            with torch.set_grad_enabled(True):
+                outputs = self.model(inputs)
+                loss = self.criterion(outputs,targets,loss_params)
+                loss.backward()
+                self.optimizer.step()
+            
+            final_loss += loss.item()*inputs.size(0)
+            data_n += inputs.size(0)
+            final_loss = final_loss / data_n
+        return final_loss
+
+    def test(self, data_loader, edl_used): # full batch
         self.model.eval()
         final_loss = 0
         for data in data_loader:
             self.optimizer.zero_grad()
             inputs = data['x'].to(self.device)
             targets = data['y'].to(self.device)
-            outpus = self.model(inputs)
-            loss = self.loss_fn(targets, outputs)
-            self.optimizer.step()
-            final_loss += loss.item()
+            outputs = self.model(inputs)
+            cal_recall(outputs, targets)
         return final_loss / len(data_loader)
-
+    
 class Model(nn.Module):
-    def __init__(self, number_of_class=12, dropout=0.5,k_c=3):
+    def __init__(self, number_of_class=12, dropout=0.5, k_c=3):
         # k_c: kernel size of channel
         super(Model, self).__init__()
         #self._batch_norm0 = nn.BatchNorm2d(1)
