@@ -31,22 +31,22 @@ def retrain(params):
     model = utils.Model()
     model.to(DEVICE)
     optimizer = getattr(torch.optim, params['optimizer_name'])(model.parameters(), lr=params['lr'])
-    eng = utils.Engine(model,optimizer,device = DEVICE)
+    eng = utils.EngineTrain(model,optimizer,device = DEVICE)
 
     edl_flag = params['edl']
     loss_params = {'edl':edl_flag}
-    
+
     if edl_flag:
         edl_loss_params = ['kl','annealing_step','edl_fun','evi_fun','class_n']
         loss_params.update({item:params.get(item) for item in edl_loss_params})
-        loss_params['device'] = DEVICE  
-    
+        loss_params['device'] = DEVICE
+
     for epoch in range(1,EPOCHS+1):
         if edl_flag:
             loss_params['epoch_num'] = epoch
-        train_loss = eng.re_train(train_loader,loss_params) 
+        train_loss = eng.re_train(train_loader,loss_params)
         print(f"epoch:{epoch}, train_loss:{train_loss}")
-    
+
     model_name = f"models/ecnn/sb{sb_n}.pt" if edl_flag else f"models/cnn/sb{sb_n}.pt"
     torch.save(model.state_dict(), model_name)
 
@@ -56,26 +56,55 @@ def test(params):
     ## load_data
     device = torch.device('cpu')
     test_trial_list = params['test_trial_list']
-
     sb_n = params['sb_n']
 
     # Load testing Data
     inputs, targets = load_data_test_cnn(DATA_PATH, params['sb_n'], params['test_trial_list'])
 
-    # Load trained model 
+    # Load trained model
     model = utils.Model()
     model.load_state_dict(torch.load(params['model_saved'], map_location=device))
     model.eval()
-    
+
     # Get Results
-    outputs = test_net(inputs)
+    outputs = model(inputs.to(device))
+
+    # Load the Testing Engine
+    eng = EngineTest(outputs,targets)
+
+    common_keys_for_update_results = ['sb_n','edl','test_trial_list']
+
+    dict_for_update_results = {key: params[key] for key in keys_for_update_results}
+    eng.update_result_acc(dict_for_update_results)
+    eng.update_result_R(dict_for_update_results)
+
+
+
+
+    temp_data_mis['skew'] = np.count_nonzero(labels)/n_in
+
+    keys_for_update_R = ['sb_n','edl','test_trial_list']
+    eng.update_result_R(dict_for_update_un)
+
+
+
+    update_result_un(df_mis,temp_data_mis,labels,scores_in)
+    # Get label  pos: wrong predictions; neg: right predictions
+    labels = np.logical_not(pred_results)
+    print(labels)
+    n_in = len(labels)
+    temp_data_mis['skew'] = np.count_nonzero(labels)/n_in
+    #print(labels.shape)
+
+    update_result_R(dict_for_update_un) # R: Reliability
+
 
     # Analyse results
     scores_in, pred_labels = get_scores(outputs,uncertainty_types,params['evi_fun'])
     pred_results = pred_labels== targets
 
     ## Update acc
-    df_acc = update_result_acc(df_acc, temp_data_acc, pred_results,targets)
+    df_acc = update_result_acc(df_acc, temp_data_acc, pred_results, targets)
 
     ## Update mis
 
@@ -121,13 +150,14 @@ def test(params):
 
 
 if __name__ == "__main__":
-    
+
+    results_path = 'results/cv/'
+    if not os.path.exists(results_path):
+        os.makedirs(results_path)
+
     retrain_required = False
-
     test_trial_list = [5]
-    
     edl_used = args.edl_used
-
     params = {
         #'sb_n': sb_n,
         'test_trial_list': test_trial_list,
@@ -137,16 +167,16 @@ if __name__ == "__main__":
         'lr': 1e-3,
         'edl': edl_used
     }
-    
+
     if edl_used:
         params['edl_fun'] = 'mse'
         params['annealing_step'] = 10
         params['kl'] = 0
         params['evi_fun'] = 'relu'
-    
+
     sb_n = 1
     params['sb_n'] = sb_n
-    
+
     core_path = f'study/ecnn/sb{sb_n}' if edl_used else f'study/cnn/sb{sb_n}'
     study_path = "sqlite:///"+core_path+"/temp.db"
     loaded_study = optuna.load_study(study_name="STUDY", storage=study_path)
@@ -157,17 +187,19 @@ if __name__ == "__main__":
 
     model_name = f"models/ecnn/sb{sb_n}.pt" if edl_flag else f"models/cnn/sb{sb_n}.pt"
     params['saved_model'] = model_name
-    
+
     if retrain_required:
         retrain(params)
 
+
+
     test(params)
-    
+
     '''
     for sb_n in range(1,11):
         params['sb_n'] = sb_n
         study_path = f'study/ecnn/sb{sb_n}' if edl_used else f'study/cnn/sb{sb_n}'
-    
+
         if not os.path.exists(study_path):
             os.makedirs(study_path)
 
@@ -184,9 +216,9 @@ if __name__ == "__main__":
             storage="sqlite:///"+study_path+"/temp.db",  # storing study results, other storages are available too, see documentation.
             load_if_exists=True
         )
-        
+
         study.optimize(lambda trial: objective(trial,params), n_trials=25)
-        
+
         print("Number of finished trials: ", len(study.trials))
 
         print("Best trial:")
