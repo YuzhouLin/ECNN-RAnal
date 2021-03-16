@@ -1,9 +1,10 @@
 import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-from helps import edl_mse_loss
-from sklearn import metrics
+import helps_pro as pro
+import pandas as pd
+import os
+import pdb
 
 
 class NinaProDataset:
@@ -30,7 +31,7 @@ class EngineTrain:
     @staticmethod
     def criterion(outputs, targets, loss_params):  # loss function
         if loss_params['edl']:
-            loss = edl_mse_loss(outputs, targets, loss_params)
+            loss = pro.edl_mse_loss(outputs, targets, loss_params)
         else:
             loss_fun = nn.CrossEntropyLoss()
             loss = loss_fun(outputs, targets)
@@ -53,7 +54,7 @@ class EngineTrain:
                     if train_flag:
                         loss.backward()
                         self.optimizer.step()
-                final_loss[phase] += loss.item()*inputs.size(0)
+                final_loss[phase] += loss.item() * inputs.size(0)
                 data_n += inputs.size(0)
             final_loss[phase] = final_loss[phase] / data_n
         return final_loss
@@ -72,7 +73,7 @@ class EngineTrain:
                 loss.backward()
                 self.optimizer.step()
 
-            final_loss += loss.item()*inputs.size(0)
+            final_loss += loss.item() * inputs.size(0)
             data_n += inputs.size(0)
             final_loss = final_loss / data_n
         return final_loss
@@ -80,20 +81,19 @@ class EngineTrain:
 
 class EngineTest:
     def __init__(self, outputs, targets):
-        # outputs: numpy array; targets: numpy array
-        self.outputs = outputs
-        self.targets = targets
+        # outputs: tensor; targets: numpy array
+        self.outputs = outputs  # torch size: [1547, 12]
+        self.targets = targets[:, np.newaxis]  # [1547, 1]
 
-    @staticmethod
-    def cal_recall(outputs, targets):
-        _, true_class_n = np.unique(targets, return_counts=True)
-        preds = outputs.argmax(dim=1, keepdim=True)
-        recall = []
-        for class_index, class_n in enumerate(true_class_n):
-            true_each_class = targets == class_index
-            pred_result_each_class = np.logical_and(preds, true_each_class)
-            recall.append(np.sum(pred_result_each_class)/class_n)
-        return recall
+    def get_output_results(self, acti_fun):  # outputs after activation func
+        output_results = \
+                eval('pro.' + acti_fun + '_evidence(self.outputs)')
+        return output_results  # numpy array
+
+    def get_pred_results(self):  # prediction results; right or wrong
+        preds = self.outputs.argmax(dim=1, keepdim=True).numpy()
+        pred_results = preds == self.targets
+        return pred_results
 
     def update_result_acc(self, params):
         # pred: prediction Results (not labels)
@@ -111,36 +111,14 @@ class EngineTest:
             df = pd.DataFrame(columns=column_names)
         # Update it
         temp_dict = params
-        recall = self.cal_recall(self.outputs, self.targets)
+        recall = pro.cal_recall(self.outputs, self.targets)
         for class_index, each_recall in enumerate(recall):
-            temp_dict['gesture'] = i + 1
+            temp_dict['gesture'] = class_index + 1
             temp_dict['recall'] = each_recall
             df = df.append([temp_dict])
         # Save it
         df.to_csv(filename, index=False)
-        return df
-
-    @staticmethod
-    def cal_minAP(n_pos, n_neg):
-        # theoretical minimum average precision
-        AP_min = 0.0
-        for i in range(1, n_pos+1):
-            AP_min += i/(i+n_neg)
-        AP_min = AP_min/n_pos
-        return AP_min
-
-    def cal_nAP(labels, scores):
-        # labels: labels for postive or not
-        # scores: quantified uncertainty
-        n_sample = len(labels)  # the total number of predictions
-        n_pos = np.sum(labels)  # the total number of positives
-        n_neg = n_sample - n_pos  # the total number of negatives
-        skew = n_pos/n_sample
-        minAP = cal_minAP(n_pos, n_neg)
-
-        AP = metrics.average_precision_score(labels, scores)
-        nAP = (AP - minAP)/(1-minAP)  # normalised AP
-        return nAP, skew
+        return
 
     def update_result_R(self, params):
         # pred: prediction Results (not labels)
@@ -155,44 +133,29 @@ class EngineTest:
             df = pd.read_csv(filename)
         else:
             df = pd.DataFrame(columns=column_names)
-        # Update it
-
-        _, true_class_n = np.unique(targets, return_counts=True)
-        preds = outputs.argmax(dim=1, keepdim=True)
-
-        for class_index, class_n in enumerate(true_class_n):
-            true_each_class = targets == class_index
-            pred_result_each_class = np.logical_and(preds, true_each_class)
-            labels = np.logical_not(pred_result_each_class)
-
-        return recall
-
-    # Update acc
-    df_acc = update_result_acc(df_acc, temp_data_acc, pred_results, targets)
-
-    # Update mis
-
-    # Get label  pos: wrong predictions; neg: right predictions
-    labels = np.logical_not(pred_results)
 
         temp_dict = params
+        #  Calculate the scores
+        output_results = self.get_output_results(params['acti_fun'])
+        scores = pro.cal_scores(output_results, params['edl'])
 
+        #  Calculate the labels for misclassification detection
+        pred_results = self.get_pred_results()
+        labels = np.logical_not(pred_results)
 
-        for uncertainty_type, score in scores.items():
-            temp = PREval(labels,score)
-            temp_data['AP_nor'] = temp.AP_nor_cal()
-            temp_data['uncertainty_type'] = uncertainty_type
-            df = df.append([temp_data])
+        #  Calculate the normalised average precision
+        nAPs, skew = pro.cal_nAP(labels, scores)
 
-
-        recall = self.cal_recall(self.outputs, self.targets)
-        for class_index, each_recall in enumerate(recall):
-            temp_dict['gesture'] = i + 1
-            temp_dict['recall'] = each_recall
+        # Update it
+        temp_dict['skew'] = skew
+        for un_type, nAP in nAPs.items():
+            temp_dict['uncertainty'] = un_type
+            temp_dict['nAP'] = nAP
             df = df.append([temp_dict])
-        ## Save it
-        df.to_csv(filename,index = False)
-        return df
+
+        # Save it
+        df.to_csv(filename, index=False)
+        return
 
 
 class Model(nn.Module):
@@ -212,7 +175,7 @@ class Model(nn.Module):
         self._dropout2 = nn.Dropout2d(dropout)
         self._pool2 = nn.MaxPool2d(kernel_size=(1, 3))
 
-        self._fc1 = nn.Linear((16-2*k_c+2)*3*64, 500)
+        self._fc1 = nn.Linear((16 - 2 * k_c + 2) * 3 * 64, 500)
         # 8 = 12 channels - 2 -2 ;  53 = ((500-4)/3-4)/3
         self._batch_norm3 = nn.BatchNorm1d(500)
         self._prelu3 = nn.PReLU(500)
@@ -243,7 +206,7 @@ class Model(nn.Module):
                 m.bias.data.zero_()
 
     def forward(self, x):
-        # x = x.permute(0,1,3,2) # --> batch * 1 * 16 * 50
+        # x = x.permute(0,1,3,2)  --> batch * 1 * 16 * 50
         # print(x.size())
         conv1 = self._dropout1(self._prelu1(self._batch_norm1(self._conv1(x))))
         # conv1 = self._dropout1(

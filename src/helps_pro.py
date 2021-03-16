@@ -1,81 +1,35 @@
-import os
-import pickle
-import pandas as pd
 import numpy as np
 import torch
-from torch.utils.data import TensorDataset
 import torch.nn.functional as F
-
-
-def get_device():
-    use_cuda = torch.cuda.is_available()
-    device = torch.device("cuda:0" if use_cuda else "cpu")
-    return device
+from sklearn import metrics
 
 
 def one_hot_embedding(labels, num_classes):
     # Convert to One Hot Encoding
+    # labels shape: (X,)
     y = torch.eye(num_classes)
     return y[labels]
 
 
-def load_data_cnn(data_path, sb_n, trial_list, batch_size):
-    X = []  # L*1*16(channels)*50(samples)
-    Y = []
-    for trial_n in trial_list:
-        temp = pd.read_pickle(
-            os.getcwd() + data_path + f"sb{sb_n}_trial{trial_n}.pkl")
-        X.extend(temp['x'])
-        Y.extend(temp['y'])
-    data = TensorDataset(
-        torch.from_numpy(np.array(X, dtype=np.float32)).permute(0, 1, 3, 2),
-        torch.from_numpy(np.array(Y, dtype=np.int64)))
-    if batch_size > 1:  # For training and validation
-        data_loader = torch.utils.data.DataLoader(
-            data, batch_size=batch_size, shuffle=True, drop_last=True)
-    elif batch_size == 1:  # For testing
-        # default DataLoader: batch_size = 1, shuffle = False, drop_last =False
-        data_loader = torch.utils.data.DataLoader(data)
-    return data_loader
-
-
-def load_data_test_cnn(data_path, sb_n, trial_list):
-    X = []  # L*1*16(channels)*50(samples)
-    Y = []
-    for trial_n in trial_list:
-        temp = pd.read_pickle(
-            os.getcwd() + data_path + f'sb{sb_n}_trial{trial_n}.pkl')
-        X.extend(temp['x'])
-        Y.extend(temp['y'])
-
-        X = torch.as_tensor(
-            torch.from_numpy(np.array(self.X))).permute(0, 1, 3, 2)
-        # L*1*16*50
-        # Y = torch.from_numpy(np.array(self.Y, dtype=np.int64))
-        Y = np.array(self.Y, dtype=np.int64)
-        # X: tensor; Y: numpy
-        return X, Y
-
-
 def relu_evidence(y):
-    return F.relu(y)
+    return F.relu(y).numpy()
 
 
 def softmax_evidence(y):
-    return F.softmax(y)
+    return F.softmax(y).numpy()
 
 
 def exp_evidence(y):
-    return torch.exp(torch.clamp(y, max=3))
+    return torch.exp(torch.clamp(y, max=3)).numpy()
 
 
 def softplus_evidence(y):
-    return F.softplus(y)
+    return F.softplus(y).numpy()
 
 
 def kl_divergence(alpha, num_classes, device=None):
-    if not device:
-        device = get_device()
+    # if not device:
+    #     device = get_device()
     beta = torch.ones([1, num_classes], dtype=torch.float32, device=device)
     S_alpha = torch.sum(alpha, dim=1, keepdim=True)
     S_beta = torch.sum(beta, dim=1, keepdim=True)
@@ -93,8 +47,8 @@ def kl_divergence(alpha, num_classes, device=None):
 
 
 def loglikelihood_loss(y, alpha, device=None):
-    if not device:
-        device = get_device()
+    # if not device:
+    #    device = get_device()
     y = y.to(device)
     alpha = alpha.to(device)
     S = torch.sum(alpha, dim=1, keepdim=True)
@@ -110,7 +64,7 @@ def mse_loss(y, alpha, params):
     # if annealing_step = 0, no kl
     y = y.to(params['device'])  # 256*12
     alpha = alpha.to(params['device'])  # 256*12
-    S = torch.sum(alpha, dim=1, keepdim=True)
+    # S = torch.sum(alpha, dim=1, keepdim=True)
     loglikelihood = loglikelihood_loss(y, alpha, device=params['device'])
     '''
     belief = (alpha-1.0)/S
@@ -141,7 +95,7 @@ def mse_loss(y, alpha, params):
         return loglikelihood
     else:
         kl_alpha = (alpha - 1) * (1 - y) + 1
-        target_alpha = torch.sum(alpha * y, dim=1, keepdim=True)
+        # target_alpha = torch.sum(alpha * y, dim=1, keepdim=True)
         # p_t = target_alpha/S
         # print(target_alpha.size())
         # torch.sum(alpha[y==1],dim=1,keepdim=True)
@@ -173,3 +127,90 @@ def edl_mse_loss(output, target, params):
     y = one_hot_embedding(target, params['class_n'])
     loss = torch.mean(mse_loss(y.float(), alpha, params))
     return loss
+
+
+def cal_recall(outputs, targets):
+    _, true_class_n = np.unique(targets, return_counts=True)
+    preds = outputs.argmax(dim=1, keepdim=True).numpy()  # (1547, 1)
+    recall = []
+    for class_index, class_n in enumerate(true_class_n):
+        target_each_class = targets == class_index
+        pred_result_each_class = preds[target_each_class] == class_index
+        recall.append(np.sum(pred_result_each_class) / class_n)
+    return recall
+
+
+def cal_minAP(n_pos, n_neg):
+    # theoretical minimum average precision
+    AP_min = 0.0
+    for i in range(1, n_pos + 1):
+        AP_min += i / (i + n_neg)
+    AP_min = AP_min / n_pos
+    return AP_min
+
+
+def cal_nAP(labels, scores):
+    # labels: labels for postive or not
+    # scores: quantified uncertainty; dict
+    n_sample = len(labels)  # the total number of predictions
+    n_pos = np.sum(labels)  # the total number of positives
+    n_neg = n_sample - n_pos  # the total number of negatives
+    skew = n_pos / n_sample
+    nAP = {key: [] for key in scores}
+
+    if skew == 0:  # No postive samples found
+        #  PR curve makes no sense, record it but dont use it
+        for un_type, un_score in scores.items():
+            nAP[un_type] = float("nan")  # normalised AP
+    else:
+        minAP = cal_minAP(n_pos, n_neg)
+        for un_type, un_score in scores.items():
+            AP = metrics.average_precision_score(labels, un_score)
+            nAP[un_type] = (AP - minAP) / (1 - minAP)  # normalised AP
+    return nAP, skew
+
+
+def cal_entropy(p):
+    entropy = np.sum(-p * np.log(p + 1e-8), axis=1, keepdims=True)
+    return entropy
+
+
+def cal_max_prob(p):
+    max_prob = np.amax(p, axis=1, keepdims=True)
+    return max_prob
+
+
+def cal_vacuity(b):  # b: belief
+    vacuity = 1 - np.sum(b, axis=1, keepdims=True)
+    return vacuity
+
+
+def cal_dissonance(b):
+    dissonance = np.zeros(b.shape[0])
+    for i, x_i in enumerate(b.T):
+        x_j = np.delete(b, i, axis=1)
+        bal = 1 - \
+            np.abs(x_j - x_i[:, np.newaxis]) / \
+            (x_j + x_i[:, np.newaxis] + 1e-8)
+        dissonance += \
+            x_i * np.sum(x_j * np.nan_to_num(bal), axis=1) / \
+            (np.sum(x_j, axis=1) + 1e-8)
+
+    return dissonance[:, np.newaxis]
+
+
+def cal_scores(results, edl_used):
+    scores = {}
+    if not edl_used:  # results are the pred probabilities
+        scores['entropy'] = cal_entropy(results)
+        scores['-max_prob'] = -cal_max_prob(results)
+    else:  # results are the evidences
+        alphas = results + 1
+        total_evidences = np.sum(alphas, axis=1, keepdims=True)
+        probs = alphas / total_evidences
+        beliefs = results / total_evidences
+        scores['entropy'] = cal_entropy(probs)
+        scores['-max_prob'] = -cal_max_prob(probs)
+        scores['vacuity'] = cal_vacuity(beliefs)
+        scores['dissonance'] = cal_dissonance(beliefs)
+    return scores

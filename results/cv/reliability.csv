@@ -1,0 +1,3 @@
+sb_n,edl,test_trial_list,acti_fun,gesture,skew,uncertainty,nAP
+1,False,[5],softmax,,0.18293471234647704,entropy,0.38310193607281035
+1,False,[5],softmax,,0.18293471234647704,-max_prob,0.39758102513512045
