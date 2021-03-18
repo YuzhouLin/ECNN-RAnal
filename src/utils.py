@@ -4,7 +4,6 @@ import torch.nn as nn
 import helps_pro as pro
 import pandas as pd
 import os
-import pdb
 
 
 class NinaProDataset:
@@ -87,7 +86,7 @@ class EngineTest:
 
     def get_output_results(self, acti_fun):  # outputs after activation func
         output_results = \
-                eval('pro.' + acti_fun + '_evidence(self.outputs)')
+                eval('pro.' + acti_fun + '_evidence(self.outputs).numpy()')
         return output_results  # numpy array
 
     def get_pred_results(self):  # prediction results; right or wrong

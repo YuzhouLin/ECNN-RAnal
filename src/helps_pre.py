@@ -31,19 +31,19 @@ def load_data_cnn(data_path, sb_n, trial_list, batch_size):
     return data_loader
 
 
-def load_data_test_cnn(data_path, sb_n, trial_list):
+def load_data_test_cnn(data_path, sb_n, trial_n):
     X = []  # L*1*16(channels)*50(samples)
     Y = []
-    for trial_n in trial_list:
-        temp = pd.read_pickle(
-            os.getcwd() + data_path + f'sb{sb_n}_trial{trial_n}.pkl')
-        X.extend(temp['x'])
-        Y.extend(temp['y'])
 
-        X = torch.as_tensor(
-            torch.from_numpy(np.array(X))).permute(0, 1, 3, 2)
-        # L*1*16*50
-        # Y = torch.from_numpy(np.array(Y, dtype=np.int64))
-        Y = np.array(Y, dtype=np.int64)
-        # X: tensor; Y: numpy
-        return X, Y
+    temp = pd.read_pickle(
+        os.getcwd() + data_path + f'sb{sb_n}_trial{trial_n}.pkl')
+    X.extend(temp['x'])
+    Y.extend(temp['y'])
+
+    X = torch.as_tensor(
+        torch.from_numpy(np.array(X))).permute(0, 1, 3, 2)
+    # L*1*16*50
+    # Y = torch.from_numpy(np.array(Y, dtype=np.int64))
+    Y = np.array(Y, dtype=np.int64)
+    # X: tensor; Y: numpy
+    return X, Y

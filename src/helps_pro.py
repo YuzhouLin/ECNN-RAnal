@@ -12,19 +12,19 @@ def one_hot_embedding(labels, num_classes):
 
 
 def relu_evidence(y):
-    return F.relu(y).numpy()
+    return F.relu(y)
 
 
 def softmax_evidence(y):
-    return F.softmax(y).numpy()
+    return F.softmax(y, dim=1)
 
 
 def exp_evidence(y):
-    return torch.exp(torch.clamp(y, max=3)).numpy()
+    return torch.exp(torch.clamp(y, max=3))
 
 
 def softplus_evidence(y):
-    return F.softplus(y).numpy()
+    return F.softplus(y)
 
 
 def kl_divergence(alpha, num_classes, device=None):
