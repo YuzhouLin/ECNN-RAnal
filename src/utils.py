@@ -71,10 +71,9 @@ class EngineTrain:
                 loss = self.criterion(outputs, targets, loss_params)
                 loss.backward()
                 self.optimizer.step()
-
             final_loss += loss.item() * inputs.size(0)
             data_n += inputs.size(0)
-            final_loss = final_loss / data_n
+        final_loss = final_loss / data_n
         return final_loss
 
 
