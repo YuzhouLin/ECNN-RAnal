@@ -97,7 +97,7 @@ class EngineTest:
         # pred: prediction Results (not labels)
         # true: Ground truth labels
         # params: dict -->
-        # {'sb_n': , edl', 'test_trial_list'}
+        # {'sb_n': , edl', 'outer_f'}
 
         # load current result file
         filename = 'results/cv/accuracy.csv'
@@ -122,10 +122,10 @@ class EngineTest:
         # pred: prediction Results (not labels)
         # true: Ground truth labels
         # params: dict -->
-        # {'sb_n': , edl', 'test_trial_list'}
+        # {'sb_n': , edl', 'outer_f'}
         # load current result file
         filename = 'results/cv/reliability.csv'
-        column_names = [*params, 'gesture', 'skew', 'uncertainty', 'nAP']
+        column_names = [*params, 'skew', 'uncertainty', 'nAP']
         # *params: 'sb_n','edl','test_trial_list'
         if os.path.exists(filename):
             df = pd.read_csv(filename)
