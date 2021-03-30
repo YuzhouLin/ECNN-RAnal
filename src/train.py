@@ -12,9 +12,12 @@ from optuna.pruners import MedianPruner
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
-    '-edl', '--edl_used', help='if used edl?', action='store_true')
+    '--edl', type=int, default=0,
+    help='0: no edl; 1: edl without kl; 2: edl with kl')
+
 args = parser.parse_args()
 
+EDL_USED = args.edl
 DEVICE = pre.get_device()
 EPOCHS = 150
 TRIAL_LIST = list(range(1, 7))
@@ -53,25 +56,23 @@ def run_training(fold, params, save_model):
         params['optimizer_name'])(model.parameters(), lr=params['lr'])
 
     eng = utils.EngineTrain(model, optimizer, device=DEVICE)
-    edl_flag = params['edl']
-    loss_params = {'edl': edl_flag}
+    loss_params = {'edl_used': EDL_USED}
     loss_params['device'] = DEVICE
 
-    if edl_flag:
+    if EDL_USED in [1, 2]:
         edl_loss_params = [
             'kl', 'annealing_step', 'edl_fun', 'evi_fun', 'class_n']
         loss_params.update(
             {item: params.get(item) for item in edl_loss_params})
 
     if save_model:
-        MODEL_PATH = f"models/ecnn/sb{sb_n}_o{o_f}_i{fold}.pt" \
-            if edl_flag else f"models/cnn/sb{sb_n}_o{o_f}_i{fold}.pt"
+        MODEL_PATH = f"models/ecnn{EDL_USED}/sb{sb_n}_o{o_f}_i{fold}.pt"
 
     best_loss = np.inf
     early_stopping_iter = 10
     early_stopping_counter = 0
     for epoch in range(1, EPOCHS + 1):
-        if edl_flag:
+        if EDL_USED == 2:
             loss_params['epoch_num'] = epoch
         train_losses = eng.train(trainloaders, loss_params)
         train_loss = train_losses['train']
@@ -106,12 +107,15 @@ def objective(trial, params):
         "optimizer", ["Adam", "RMSprop", "SGD"])
     params['lr'] = trial.suggest_loguniform("lr", 1e-3, 1e-2)
     params['batch_size'] = trial.suggest_int("batch_size", 128, 256, step=128)
-    if params['edl']:
+
+    if EDL_USED in [1, 2]:
         params['evi_fun'] = trial.suggest_categorical(
             "evi_fun", ["relu", "softplus", "exp"])
-        params['kl'] = trial.suggest_int("KL", 0, 1, step=1)
-        # params['annealing_step'] = /
-        # trial.suggest_int("annealing_step",10,30,step=10)
+
+    if EDL_USED == 2:
+        # params['kl'] = trial.suggest_int("KL", 0, 1, step=1)
+        params['annealing_step'] = trial.suggest_int(
+            "annealing_step", 10, 60, step=5)
 
     all_losses = []
     for i_f in range(len(TRIAL_LIST) - 1):  # len(TRIAL_LIST) - 1 = 5
@@ -131,12 +135,9 @@ def cv_hyperparam_study(params):
         params['outer_f'] = test_trial
         for sb_n in range(1, 11):
             params['sb_n'] = sb_n
-            study_path = \
-                f'study/ecnn/sb{sb_n}' if edl_used else f'study/cnn/sb{sb_n}'
-
+            study_path = f'study/ecnn{EDL_USED}/sb{sb_n}'
             if not os.path.exists(study_path):
                 os.makedirs(study_path)
-
             sampler = TPESampler()
             study = optuna.create_study(
                 direction="minimize",  # maximaze or minimaze our objective
@@ -169,7 +170,6 @@ if __name__ == "__main__":
 
     # test_trial_list = [5]
     test_trial = 5
-    edl_used = args.edl_used
 
     params = {
         # 'sb_n': sb_n,
@@ -179,13 +179,13 @@ if __name__ == "__main__":
         'batch_size': 128,
         'optimizer_name': 'Adam',
         'lr': 1e-3,
-        'edl': edl_used
+        'edl_used': EDL_USED
     }
-    if edl_used:
+    if EDL_USED in [1, 2]:
         params['edl_fun'] = 'mse'
-        params['annealing_step'] = 10
-        params['kl'] = 0
         params['evi_fun'] = 'relu'
+        params['annealing_step'] = 10
+        params['kl'] = 0 if EDL_USED == 1 else 1
 
     # run_training(1, params, save_model=False)
     cv_hyperparam_study(params)

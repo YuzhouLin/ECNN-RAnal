@@ -81,19 +81,19 @@ def mse_loss(y, alpha, params):
                 temp1 += j
         u_dis += k*temp0/(temp1+1e-8)
     '''
-    annealing_coef = \
-        torch.min(
-            torch.tensor(1.0, dtype=torch.float32),
-            torch.tensor(
-                params['epoch_num'] / params['annealing_step'],
-                dtype=torch.float32)
-        )
 
     if params['kl'] == 0:
         # return loglikelihood_err + loglikelihood_var
         # return 0.6*(loglikelihood_err + loglikelihood_var) + 0.4*u_dis
         return loglikelihood
     else:
+        annealing_coef = \
+            torch.min(
+                torch.tensor(1.0, dtype=torch.float32),
+                torch.tensor(
+                    params['epoch_num'] / params['annealing_step'],
+                    dtype=torch.float32)
+            )
         kl_alpha = (alpha - 1) * (1 - y) + 1
         # target_alpha = torch.sum(alpha * y, dim=1, keepdim=True)
         # p_t = target_alpha/S

@@ -1,23 +1,19 @@
 import argparse
-import os
 import torch
-import numpy as np
-import pandas as pd
 import utils
-import pickle
 import helps_pre as pre
-import optuna
 import copy
-import torch.nn.functional as F
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
-    '-edl', '--edl_used', help='if used edl?', action='store_true')
+    '--edl', type=int, default=0,
+    help='0: no edl; 1: edl without kl; 2: edl with kl')
 args = parser.parse_args()
 
-
+EDL_USED = args.edl
 DEVICE = pre.get_device()
 DATA_PATH = '/data/NinaproDB5/raw/'
+
 
 def test(params):
     #  load_data
@@ -50,7 +46,7 @@ def test(params):
 
     eng.update_result_acc(dict_for_update_acc)
 
-    if params['edl']:
+    if EDL_USED in [1, 2]:
         dict_for_update_R['acti_fun'] = params['evi_fun']
     else:
         dict_for_update_R['acti_fun'] = 'softmax'
@@ -62,35 +58,28 @@ def test(params):
 
 
 if __name__ == "__main__":
-   
-    edl_used = args.edl_used
+
     params = {
         'class_n': 12,
         'batch_size': 128,
         'optimizer_name': 'Adam',
         'lr': 1e-3,
-        'edl': edl_used
+        'edl_used': EDL_USED
     }
 
-    if edl_used:
+    if EDL_USED in [1, 2]:
         params['edl_fun'] = 'mse'
-        params['annealing_step'] = 10
-        params['kl'] = 0
         params['evi_fun'] = 'relu'
+        params['annealing_step'] = 10
+        params['kl'] = 0 if EDL_USED == 1 else 1
 
-    # retraining and save the models 
+    # retraining and save the models
     for test_trial in range(1, 7):
         params['outer_f'] = test_trial
         for sb_n in range(1, 11):
             params['sb_n'] = sb_n
-
-            if edl_used:
-                model_name = f"models/ecnn/sb{sb_n}_t{test_trial}.pt"
-            else:
-                model_name = f"models/cnn/sb{sb_n}_t{test_trial}.pt"
-
+            model_name = f"models/ecnn{EDL_USED}/sb{sb_n}_t{test_trial}.pt"
             params['saved_model'] = model_name
-
             test(params)
             print(f'Testing done. sb{sb_n}-t{test_trial}')
 

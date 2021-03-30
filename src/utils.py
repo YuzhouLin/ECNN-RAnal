@@ -29,7 +29,7 @@ class EngineTrain:
 
     @staticmethod
     def criterion(outputs, targets, loss_params):  # loss function
-        if loss_params['edl']:
+        if loss_params['edl_used'] in [1, 2]:
             loss = pro.edl_mse_loss(outputs, targets, loss_params)
         else:
             loss_fun = nn.CrossEntropyLoss()
