@@ -12,7 +12,7 @@ from optuna.pruners import MedianPruner
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
-    '--edl', type=int, default=0,
+    'edl', type=int, default=0,
     help='0: no edl; 1: edl without kl; 2: edl with kl')
 
 args = parser.parse_args()

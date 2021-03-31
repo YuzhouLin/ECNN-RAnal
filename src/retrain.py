@@ -3,11 +3,12 @@ import torch
 import utils
 import helps_pre as pre
 import optuna
+import os
 
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
-    '--edl', type=int, default=0,
+    'edl', type=int, default=0,
     help='0: no edl; 1: edl without kl; 2: edl with kl')
 args = parser.parse_args()
 
@@ -62,6 +63,8 @@ def retrain(params):
 
 if __name__ == "__main__":
 
+    
+    print(os.getcwd())
     params = {
         'class_n': 12,
         'batch_size': 128,
@@ -90,7 +93,7 @@ if __name__ == "__main__":
             for key, value in temp_best_trial.params.items():
                 params[key] = value
 
-            model_name = f"models/ecnn{EDL_USED}/sb{sb_n}_t{test_trial}.pt"
+            model_name = f'models/ecnn{EDL_USED}/sb{sb_n}_t{test_trial}.pt'
             params['saved_model'] = model_name
             params['best_loss'] = temp_best_trial.value
             retrain(params)

@@ -201,7 +201,7 @@ def cal_dissonance(b):
 
 def cal_scores(results, edl_used):
     scores = {}
-    if not edl_used:  # results are the pred probabilities
+    if edl_used == 0:  # results are the pred probabilities
         scores['entropy'] = cal_entropy(results)
         scores['-max_prob'] = -cal_max_prob(results)
     else:  # results are the evidences

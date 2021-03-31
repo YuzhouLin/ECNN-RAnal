@@ -100,7 +100,7 @@ class EngineTest:
         # {'sb_n': , edl', 'outer_f'}
 
         # load current result file
-        filename = 'results/cv/accuracy.csv'
+        filename = 'results/cv/accuracy_temp.csv'
         column_names = [*params, 'gesture', 'recall']
         # 'sb_n','edl','test_trial_list'
         if os.path.exists(filename):
@@ -124,7 +124,7 @@ class EngineTest:
         # params: dict -->
         # {'sb_n': , edl', 'outer_f'}
         # load current result file
-        filename = 'results/cv/reliability.csv'
+        filename = 'results/cv/reliability_temp.csv'
         column_names = [*params, 'skew', 'uncertainty', 'nAP']
         # *params: 'sb_n','edl','test_trial_list'
         if os.path.exists(filename):
@@ -135,7 +135,7 @@ class EngineTest:
         temp_dict = params
         #  Calculate the scores
         output_results = self.get_output_results(params['acti_fun'])
-        scores = pro.cal_scores(output_results, params['edl'])
+        scores = pro.cal_scores(output_results, params['edl_used'])
 
         #  Calculate the labels for misclassification detection
         pred_results = self.get_pred_results()
