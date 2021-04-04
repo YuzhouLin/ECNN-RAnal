@@ -26,7 +26,6 @@ if __name__ == "__main__":
                 print(key, value)
                 break
     '''
-
     rec_r1 = pd.read_csv('results/cv/accuracy.csv')
     rec_r2 = pd.read_csv('results/cv/accuracy_temp.csv') 
     rec_r = pd.concat([rec_r1, rec_r2], ignore_index=True)

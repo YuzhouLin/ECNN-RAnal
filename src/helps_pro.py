@@ -86,7 +86,7 @@ def mse_loss(y, alpha, params):
         # return loglikelihood_err + loglikelihood_var
         # return 0.6*(loglikelihood_err + loglikelihood_var) + 0.4*u_dis
         return loglikelihood
-    else:
+    elif params['kl'] == 1:
         annealing_coef = \
             torch.min(
                 torch.tensor(1.0, dtype=torch.float32),
@@ -119,6 +119,12 @@ def mse_loss(y, alpha, params):
             kl_divergence(kl_alpha, params['class_n'], device=params['device'])
         # a = torch.tensor(0.8, dtype=torch.float32)
         return loglikelihood + kl_div  # + (1-p_t)*kl_div
+    elif params['kl'] == 2:
+        kl_alpha = (alpha - 1) * (1 - y) + 1
+        tau = torch.tensor(params['tau'], dtype=torch.float32)
+        kl_div = tau * \
+            kl_divergence(kl_alpha, params['class_n'], device=params['device'])
+        return loglikelihood + kl_div
 
 
 def edl_mse_loss(output, target, params):
@@ -149,25 +155,32 @@ def cal_minAP(n_pos, n_neg):
     return AP_min
 
 
-def cal_nAP(labels, scores):
-    # labels: labels for postive or not
-    # scores: quantified uncertainty; dict
+def cal_mis_pm(labels, scores):
+    #  calculate the misclassification performance measures
+    #  include AUROC, AP, nAP
+    #  labels: labels for postive or not
+    #  scores: quantified uncertainty; dict
     n_sample = len(labels)  # the total number of predictions
     n_pos = np.sum(labels)  # the total number of positives
     n_neg = n_sample - n_pos  # the total number of negatives
     skew = n_pos / n_sample
+    AUROC = {key: [] for key in scores}
+    AP = {key: [] for key in scores}
     nAP = {key: [] for key in scores}
 
     if skew == 0:  # No postive samples found
         #  PR curve makes no sense, record it but dont use it
         for un_type, un_score in scores.items():
+            AP[un_type] = float("nan")  # AP
             nAP[un_type] = float("nan")  # normalised AP
     else:
         minAP = cal_minAP(n_pos, n_neg)
         for un_type, un_score in scores.items():
-            AP = metrics.average_precision_score(labels, un_score)
-            nAP[un_type] = (AP - minAP) / (1 - minAP)  # normalised AP
-    return nAP, skew
+            AUROC[un_type] = metrics.roc_auc_score(labels, un_score)
+            AP[un_type] = metrics.average_precision_score(labels, un_score)
+            #  normalised AP
+            nAP[un_type] = (AP[un_type] - minAP) / (1 - minAP)
+    return AUROC, AP, nAP, skew
 
 
 def cal_entropy(p):

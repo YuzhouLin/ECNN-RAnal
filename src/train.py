@@ -2,9 +2,7 @@ import argparse
 import os
 import torch
 import numpy as np
-# import pandas as pd
 import utils
-# import pickle
 import helps_pre as pre
 import optuna
 from optuna.samplers import TPESampler
@@ -20,6 +18,7 @@ args = parser.parse_args()
 EDL_USED = args.edl
 DEVICE = pre.get_device()
 EPOCHS = 150
+CLASS_N = 12
 TRIAL_LIST = list(range(1, 7))
 DATA_PATH = '/data/NinaproDB5/raw/'
 
@@ -53,26 +52,26 @@ def run_training(fold, params, save_model):
     # optimizer = torch.optim.Adam(model.parameters(), lr=0.01,amsgrad=True)
     optimizer = getattr(
         torch.optim,
-        params['optimizer_name'])(model.parameters(), lr=params['lr'])
+        params['optimizer'])(model.parameters(), lr=params['lr'])
 
     eng = utils.EngineTrain(model, optimizer, device=DEVICE)
-    loss_params = {'edl_used': EDL_USED}
+    
+    loss_params = pre.update_loss_params(params)
     loss_params['device'] = DEVICE
-
-    if EDL_USED in [1, 2]:
-        edl_loss_params = [
-            'kl', 'annealing_step', 'edl_fun', 'evi_fun', 'class_n']
-        loss_params.update(
-            {item: params.get(item) for item in edl_loss_params})
-
+    
     if save_model:
-        MODEL_PATH = f"models/ecnn{EDL_USED}/sb{sb_n}_o{o_f}_i{fold}.pt"
+        prefix_path = f'model_innerloop/ecnn{EDL_USED}/'
+        if not os.path.exists(prefix_path):
+            os.makedirs(prefix_path)
+
+        filename = f"sb{sb_n}_o{o_f}_i{fold}.pt"
+        model_name = os.path.join(prefix_path, filename)
 
     best_loss = np.inf
     early_stopping_iter = 10
     early_stopping_counter = 0
     for epoch in range(1, EPOCHS + 1):
-        if EDL_USED == 2:
+        if 'annealing_step' in loss_params:
             loss_params['epoch_num'] = epoch
         train_losses = eng.train(trainloaders, loss_params)
         train_loss = train_losses['train']
@@ -89,11 +88,11 @@ def run_training(fold, params, save_model):
                 torch.save({
                     'epoch': epoch,
                     'model_state_dict': model.state_dict(),
-                    'optimizer_name': params['optimizer_name'],
+                    'optimizer': params['optimizer'],
                     'optimizer_state_dict': optimizer.state_dict(),
                     'train_loss': train_loss,
                     'valid_loss': valid_loss
-                    }, MODEL_PATH)
+                    }, model_name)
         else:
             early_stopping_counter += 1
         if early_stopping_counter > early_stopping_iter:
@@ -103,19 +102,20 @@ def run_training(fold, params, save_model):
 
 def objective(trial, params):
     # Update the params for tuning with cross validation
-    params['optimizer_name'] = trial.suggest_categorical(
+    params['optimizer'] = trial.suggest_categorical(
         "optimizer", ["Adam", "RMSprop", "SGD"])
     params['lr'] = trial.suggest_loguniform("lr", 1e-3, 1e-2)
     params['batch_size'] = trial.suggest_int("batch_size", 128, 256, step=128)
 
-    if EDL_USED in [1, 2]:
+    if EDL_USED != 0:
         params['evi_fun'] = trial.suggest_categorical(
             "evi_fun", ["relu", "softplus", "exp"])
-
-    if EDL_USED == 2:
-        # params['kl'] = trial.suggest_int("KL", 0, 1, step=1)
-        params['annealing_step'] = trial.suggest_int(
-            "annealing_step", 10, 60, step=5)
+        if EDL_USED == 2:
+            params['annealing_step'] = trial.suggest_int(
+                "annealing_step", 10, 60, step=5)
+        elif EDL_USED == 3:
+            params['tau'] = trial.suggest_float(
+                "tau", 0.1, 1.0, step=0.1)
 
     all_losses = []
     for i_f in range(len(TRIAL_LIST) - 1):  # len(TRIAL_LIST) - 1 = 5
@@ -130,7 +130,15 @@ def objective(trial, params):
     return np.mean(all_losses)
 
 
-def cv_hyperparam_study(params):
+def cv_hyperparam_study():
+    params = {
+        'class_n': CLASS_N,
+        'edl_used': EDL_USED
+    }
+    if EDL_USED != 0:
+        params['edl_fun'] = 'mse'
+        params['kl'] = EDL_USED - 1
+ 
     for test_trial in range(1, 7):
         params['outer_f'] = test_trial
         for sb_n in range(1, 11):
@@ -166,26 +174,6 @@ def cv_hyperparam_study(params):
 
 
 if __name__ == "__main__":
-    # sb_n = 1
 
-    # test_trial_list = [5]
-    test_trial = 5
+    cv_hyperparam_study()
 
-    params = {
-        # 'sb_n': sb_n,
-        # 'test_trial_list': test_trial_list,
-        'outer_f': test_trial,  # outer fold = testing trial
-        'class_n': 12,
-        'batch_size': 128,
-        'optimizer_name': 'Adam',
-        'lr': 1e-3,
-        'edl_used': EDL_USED
-    }
-    if EDL_USED in [1, 2]:
-        params['edl_fun'] = 'mse'
-        params['evi_fun'] = 'relu'
-        params['annealing_step'] = 10
-        params['kl'] = 0 if EDL_USED == 1 else 1
-
-    # run_training(1, params, save_model=False)
-    cv_hyperparam_study(params)

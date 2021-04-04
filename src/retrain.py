@@ -16,6 +16,7 @@ args = parser.parse_args()
 EDL_USED = args.edl
 DEVICE = pre.get_device()
 EPOCHS = 100
+CLASS_N = 12
 TRIAL_LIST = list(range(1, 7))
 DATA_PATH = '/data/NinaproDB5/raw/'
 
@@ -34,21 +35,15 @@ def retrain(params):
     model.to(DEVICE)
     optimizer = getattr(
         torch.optim,
-        params['optimizer_name'])(model.parameters(), lr=params['lr'])
+        params['optimizer'])(model.parameters(), lr=params['lr'])
     eng = utils.EngineTrain(model, optimizer, device=DEVICE)
 
-    loss_params = {'edl_used': EDL_USED}
-
-    if EDL_USED in [1, 2]:
-        edl_loss_params = \
-            ['kl', 'annealing_step', 'edl_fun', 'evi_fun', 'class_n']
-        loss_params.update(
-            {item: params.get(item) for item in edl_loss_params})
-        loss_params['device'] = DEVICE
-
+    loss_params = pre.update_loss_params(params)
+    loss_params['device'] = DEVICE
+    print(loss_params)
     best_loss = params['best_loss']
     for epoch in range(1, EPOCHS + 1):
-        if EDL_USED:
+        if 'annealing_step' in loss_params:
             loss_params['epoch_num'] = epoch
         train_loss = eng.re_train(train_loader, loss_params)
         print(
@@ -63,21 +58,18 @@ def retrain(params):
 
 if __name__ == "__main__":
 
-    
-    print(os.getcwd())
     params = {
-        'class_n': 12,
-        'batch_size': 128,
-        'optimizer_name': 'Adam',
-        'lr': 1e-3,
+        'class_n': CLASS_N,
         'edl_used': EDL_USED
     }
 
-    if EDL_USED in [1, 2]:
+    if EDL_USED != 0:
         params['edl_fun'] = 'mse'
-        params['evi_fun'] = 'relu'
-        params['annealing_step'] = 10
-        params['kl'] = 0 if EDL_USED == 1 else 1
+        params['kl'] = EDL_USED - 1
+
+    prefix_path = f'models/ecnn{EDL_USED}/'
+    if not os.path.exists(prefix_path):
+        os.makedirs(prefix_path)
 
     # retraining and save the models
     for test_trial in range(1, 7):
@@ -92,8 +84,8 @@ if __name__ == "__main__":
             # Update for the optimal hyperparameters
             for key, value in temp_best_trial.params.items():
                 params[key] = value
-
-            model_name = f'models/ecnn{EDL_USED}/sb{sb_n}_t{test_trial}.pt'
+            filename = f'sb{sb_n}_t{test_trial}.pt'
+            model_name = os.path.join(prefix_path, filename)
             params['saved_model'] = model_name
             params['best_loss'] = temp_best_trial.value
             retrain(params)

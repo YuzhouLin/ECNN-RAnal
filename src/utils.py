@@ -29,11 +29,11 @@ class EngineTrain:
 
     @staticmethod
     def criterion(outputs, targets, loss_params):  # loss function
-        if loss_params['edl_used'] in [1, 2]:
-            loss = pro.edl_mse_loss(outputs, targets, loss_params)
-        else:
+        if loss_params['edl_used'] == 0:
             loss_fun = nn.CrossEntropyLoss()
             loss = loss_fun(outputs, targets)
+        else:
+            loss = pro.edl_mse_loss(outputs, targets, loss_params)
         return loss
 
     def train(self, data_loaders, loss_params):
@@ -102,7 +102,7 @@ class EngineTest:
         # load current result file
         filename = 'results/cv/accuracy_temp.csv'
         column_names = [*params, 'gesture', 'recall']
-        # 'sb_n','edl','test_trial_list'
+        # 'sb_n','edl_used','outer_f'
         if os.path.exists(filename):
             df = pd.read_csv(filename)
         else:
@@ -121,12 +121,11 @@ class EngineTest:
     def update_result_R(self, params):
         # pred: prediction Results (not labels)
         # true: Ground truth labels
-        # params: dict -->
-        # {'sb_n': , edl', 'outer_f'}
+        
         # load current result file
         filename = 'results/cv/reliability_temp.csv'
-        column_names = [*params, 'skew', 'uncertainty', 'nAP']
-        # *params: 'sb_n','edl','test_trial_list'
+        column_names = [*params, 'skew', 'uncertainty', 'AUROC', 'AP', 'nAP']
+        # *params: dict --> 'sb_n','edl_used','outer_f'
         if os.path.exists(filename):
             df = pd.read_csv(filename)
         else:
@@ -141,16 +140,32 @@ class EngineTest:
         pred_results = self.get_pred_results()
         labels = np.logical_not(pred_results)
 
-        #  Calculate the normalised average precision
-        nAPs, skew = pro.cal_nAP(labels, scores)
-
-        # Update it
+        #  Calculate the AUROC, AP and normalised AP
+        #  pm: performance measures
+        AUROCs, APs, nAPs, skew = pro.cal_mis_pm(labels, scores)
+        #  Update it
         temp_dict['skew'] = skew
-        for un_type, nAP in nAPs.items():
+        #  Update the AUROC, AP, nAP for each un
+        for un_type, AUROC in AUROCs.items():
             temp_dict['uncertainty'] = un_type
-            temp_dict['nAP'] = nAP
+            temp_dict['AUROC'] = AUROC
+            temp_dict['AP'] = APs[un_type]
+            temp_dict['nAP'] = nAPs[un_type]
+            df = df.append([temp_dict])
+        
+        '''
+        #  Update the AP for each un
+        for un_type, AP in APs.items():
+            temp_dict['uncertainty'] = un_type
+            temp_dict['AP'] = AP
             df = df.append([temp_dict])
 
+        #  Update the AUROC for each un
+        for un_type, AUROC in AUROCs.items():
+            temp_dict['uncertainty'] = un_type
+            temp_dict['AUROC'] = AUROC
+            df = df.append([temp_dict])
+        '''
         # Save it
         df.to_csv(filename, index=False)
         return

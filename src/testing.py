@@ -3,6 +3,8 @@ import torch
 import utils
 import helps_pre as pre
 import copy
+import optuna
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -18,13 +20,12 @@ DATA_PATH = '/data/NinaproDB5/raw/'
 def test(params):
     #  load_data
     device = torch.device('cpu')
-    # test_trial = params['outer_f']
-    # sb_n = params['sb_n']
+    test_trial = params['outer_f']
+    sb_n = params['sb_n']
 
     # Load testing Data
     inputs, targets = pre.load_data_test_cnn(
-        DATA_PATH, params['sb_n'],
-        params['outer_f'])
+        DATA_PATH, sb_n, test_trial)
 
     # Load trained model
     model = utils.Model()
@@ -46,10 +47,17 @@ def test(params):
 
     eng.update_result_acc(dict_for_update_acc)
 
-    if EDL_USED in [1, 2]:
-        dict_for_update_R['acti_fun'] = params['evi_fun']
-    else:
+    # Get the optimal activation function
+    if EDL_USED == 0:
         dict_for_update_R['acti_fun'] = 'softmax'
+    else:
+        # Get from hyperparameter study
+        core_path = f'study/ecnn{EDL_USED}/sb{sb_n}'
+        study_path = "sqlite:///" + core_path + f"/t{test_trial}.db"
+        loaded_study = optuna.load_study(
+            study_name="STUDY", storage=study_path)
+        temp_best_trial = loaded_study.best_trial
+        dict_for_update_R['acti_fun'] = temp_best_trial.params['evi_fun']
 
     print(dict_for_update_R)
     eng.update_result_R(dict_for_update_R)
@@ -59,21 +67,8 @@ def test(params):
 
 if __name__ == "__main__":
 
-    params = {
-        'class_n': 12,
-        'batch_size': 128,
-        'optimizer_name': 'Adam',
-        'lr': 1e-3,
-        'edl_used': EDL_USED
-    }
+    params = {'edl_used': EDL_USED}
 
-    if EDL_USED in [1, 2]:
-        params['edl_fun'] = 'mse'
-        params['evi_fun'] = 'relu'
-        params['annealing_step'] = 10
-        params['kl'] = 0 if EDL_USED == 1 else 1
-
-    # retraining and save the models
     for test_trial in range(1, 7):
         params['outer_f'] = test_trial
         for sb_n in range(1, 11):
@@ -83,10 +78,3 @@ if __name__ == "__main__":
             test(params)
             print(f'Testing done. sb{sb_n}-t{test_trial}')
 
-            '''
-            acc = pd.read_csv('results/cv/accuracy.csv')
-            print(acc)
-            R = pd.read_csv('results/cv/reliability.csv')
-            print(R)
-            exit()
-            '''

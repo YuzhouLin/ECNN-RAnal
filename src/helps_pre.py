@@ -11,6 +11,20 @@ def get_device():
     return device
 
 
+def update_loss_params(params):
+    loss_params = {}
+    items_required = ['edl_used', 'class_n']
+    if params['edl_used'] != 0:
+        items_required.extend(['kl', 'edl_fun', 'evi_fun'])
+        if params['kl'] == 1:
+            items_required.append('annealing_step')
+        elif params['kl'] == 2:
+            items_required.append('tau')
+    loss_params.update(
+            {item: params.get(item) for item in items_required})
+    return loss_params
+
+
 def load_data_cnn(data_path, sb_n, trial_list, batch_size):
     X = []  # L*1*16(channels)*50(samples)
     Y = []
