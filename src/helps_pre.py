@@ -16,10 +16,10 @@ def update_loss_params(params):
     items_required = ['edl_used', 'class_n']
     if params['edl_used'] != 0:
         items_required.extend(['kl', 'edl_fun', 'evi_fun'])
-        if params['kl'] == 1:
+        if params['edl_used'] == 2:
             items_required.append('annealing_step')
-        elif params['kl'] == 2:
-            items_required.append('tau')
+        elif params['edl_used'] == 3:
+            items_required.append('l')
     loss_params.update(
             {item: params.get(item) for item in items_required})
     return loss_params

@@ -69,7 +69,6 @@ def run_training(fold, params, save_model):
 
     best_loss = np.inf
     early_stopping_iter = 10
-    early_stopping_counter = 0
     for epoch in range(1, EPOCHS + 1):
         if 'annealing_step' in loss_params:
             loss_params['epoch_num'] = epoch
@@ -84,6 +83,7 @@ def run_training(fold, params, save_model):
         )
         if valid_loss < best_loss:
             best_loss = valid_loss
+            early_stopping_counter = 0
             if save_model:
                 torch.save({
                     'epoch': epoch,
@@ -114,8 +114,8 @@ def objective(trial, params):
             params['annealing_step'] = trial.suggest_int(
                 "annealing_step", 10, 60, step=5)
         elif EDL_USED == 3:
-            params['tau'] = trial.suggest_float(
-                "tau", 0.1, 1.0, step=0.1)
+            params['l'] = trial.suggest_float(
+                "l", 0.01, 1.0, log=True)  # l:lambda
 
     all_losses = []
     for i_f in range(len(TRIAL_LIST) - 1):  # len(TRIAL_LIST) - 1 = 5

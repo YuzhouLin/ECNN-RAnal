@@ -121,8 +121,8 @@ def mse_loss(y, alpha, params):
         return loglikelihood + kl_div  # + (1-p_t)*kl_div
     elif params['kl'] == 2:
         kl_alpha = (alpha - 1) * (1 - y) + 1
-        tau = torch.tensor(params['tau'], dtype=torch.float32)
-        kl_div = tau * \
+        coef = torch.tensor(params['l'], dtype=torch.float32)
+        kl_div = coef * \
             kl_divergence(kl_alpha, params['class_n'], device=params['device'])
         return loglikelihood + kl_div
 
