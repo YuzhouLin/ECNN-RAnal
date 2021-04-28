@@ -185,12 +185,16 @@ def cal_mis_pm(labels, scores):
 
 def cal_entropy(p):
     entropy = np.sum(-p * np.log(p + 1e-8), axis=1, keepdims=True)
-    return entropy
+    nor_entropy = entropy/(-np.log(1/p.shape[1]))
+    #  p.shape[1]: 12
+    return nor_entropy
 
 
-def cal_max_prob(p):
-    max_prob = np.amax(p, axis=1, keepdims=True)
-    return max_prob
+def cal_un_prob(p):
+    ##  un_prob: reverse max prob
+    #  un_prob = -np.amax(p, axis=1, keepdims=True)
+    un_prob = 1-np.amax(p, axis=1, keepdims=True)
+    return un_prob
 
 
 def cal_vacuity(b):  # b: belief
@@ -213,17 +217,23 @@ def cal_dissonance(b):
 
 
 def cal_scores(results, edl_used):
+    #  results: (samples * classes)
     scores = {}
     if edl_used == 0:  # results are the pred probabilities
         scores['entropy'] = cal_entropy(results)
-        scores['-max_prob'] = -cal_max_prob(results)
+        #scores['-max_prob'] = -cal_max_prob(results)
+        scores['un_prob'] = cal_un_prob(results)
+        overall = np.concatenate((scores['entropy'], scores['un_prob']), axis=1)
     else:  # results are the evidences
         alphas = results + 1
         total_evidences = np.sum(alphas, axis=1, keepdims=True)
         probs = alphas / total_evidences
         beliefs = results / total_evidences
         scores['entropy'] = cal_entropy(probs)
-        scores['-max_prob'] = -cal_max_prob(probs)
+        scores['un_prob'] = cal_un_prob(probs)
         scores['vacuity'] = cal_vacuity(beliefs)
         scores['dissonance'] = cal_dissonance(beliefs)
+        overall = np.concatenate((scores['entropy'], scores['un_prob'], scores['vacuity'], scores['dissonance']), axis=1)
+    
+    scores['overall'] = np.max(overall, axis=1, keepdims=True)
     return scores

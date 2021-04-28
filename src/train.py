@@ -158,7 +158,7 @@ def cv_hyperparam_study():
                 study_name='STUDY',
                 storage="sqlite:///" + study_path + f"/t{test_trial}.db",
                 # storing study results
-                load_if_exists=True
+                load_if_exists=False  # An error will be raised if same name
             )
 
             study.optimize(lambda trial: objective(trial, params), n_trials=25)

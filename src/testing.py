@@ -9,7 +9,8 @@ import optuna
 parser = argparse.ArgumentParser()
 parser.add_argument(
     'edl', type=int, default=0,
-    help='0: no edl; 1: edl without kl; 2: edl with kl')
+    help='0: no edl; 1: edl without kl; 2: edl with kl (annealing); \
+        3: edl with kl (trade-off)')
 args = parser.parse_args()
 
 EDL_USED = args.edl
