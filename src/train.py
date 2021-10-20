@@ -3,7 +3,7 @@ import os
 import torch
 import numpy as np
 import utils
-import helps_pre as pre
+from src import helps_pre as pre
 import optuna
 from optuna.samplers import TPESampler
 from optuna.pruners import MedianPruner
