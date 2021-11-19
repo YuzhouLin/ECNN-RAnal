@@ -36,26 +36,59 @@ def test(params):
     return targets, preds
 
 if __name__ == "__main__":
+
+    # Save the CM_matrix seperately
+    CM_model = []
+    for edl_used in range(4):
+        params = {'edl_used': edl_used}
+        CM_cv=[]
+        for test_trial in range(1, 7):
+            params['outer_f'] = test_trial
+            CM_sb=[]
+            for sb_n in range(1, 11):
+                # Get the optimal activation function
+                if edl_used == 0:
+                    params['acti_fun'] = 'softmax'
+                else:
+                    # Get from hyperparameter study
+                    core_path = f'study/ecnn{edl_used}/sb{sb_n}'
+                    study_path = "sqlite:///" + core_path + f"/t{test_trial}.db"
+                    loaded_study = optuna.load_study(
+                        study_name="STUDY", storage=study_path)
+                    temp_best_trial = loaded_study.best_trial
+                    params['acti_fun']  = temp_best_trial.params['evi_fun']
+                params['sb_n'] = sb_n
+                model_name = f"models/ecnn{edl_used}/sb{sb_n}_t{test_trial}.pt"
+                params['saved_model'] = model_name
+                y_true, y_pred = test(params)
+                print(f'Testing done. sb{sb_n}-t{test_trial}')
+                #ConfusionMatrixDisplay.from_predictions(y_true, y_pred)
+                CM_sb.append(confusion_matrix(y_true, y_pred))
+            CM_cv.append(CM_sb)
+        CM_model.append(CM_cv)
+    np.save('results/cv/CM_each', CM_model)
+
+    '''
+    # Sum up the CM matrix
     CM_matrix = []
     for edl_used in range(4):
         params = {'edl_used': edl_used}
-        # Get the optimal activation function
-        if edl_used == 0:
-            params['acti_fun'] = 'softmax'
-        else:
-            # Get from hyperparameter study
-            core_path = f'study/ecnn{edl_used}/sb{sb_n}'
-            study_path = "sqlite:///" + core_path + f"/t{test_trial}.db"
-            loaded_study = optuna.load_study(
-                study_name="STUDY", storage=study_path)
-            temp_best_trial = loaded_study.best_trial
-            params['acti_fun']  = temp_best_trial.params['evi_fun']
-        
         total_true = np.empty([0,0])
         total_pred = np.empty([0,0])
         for test_trial in range(1, 7):
             params['outer_f'] = test_trial
             for sb_n in range(1, 11):
+                # Get the optimal activation function
+                if edl_used == 0:
+                    params['acti_fun'] = 'softmax'
+                else:
+                    # Get from hyperparameter study
+                    core_path = f'study/ecnn{edl_used}/sb{sb_n}'
+                    study_path = "sqlite:///" + core_path + f"/t{test_trial}.db"
+                    loaded_study = optuna.load_study(
+                        study_name="STUDY", storage=study_path)
+                    temp_best_trial = loaded_study.best_trial
+                    params['acti_fun']  = temp_best_trial.params['evi_fun']
                 params['sb_n'] = sb_n
                 model_name = f"models/ecnn{edl_used}/sb{sb_n}_t{test_trial}.pt"
                 params['saved_model'] = model_name
@@ -66,3 +99,4 @@ if __name__ == "__main__":
                 total_pred = y_pred if len(total_pred) == 0 else np.append(total_pred, y_pred)
         CM_matrix.append(confusion_matrix(total_true, total_pred))
     np.save('results/cv/CM_sum', CM_matrix)
+    '''
