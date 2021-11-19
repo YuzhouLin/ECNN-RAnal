@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 import torch.nn as nn
-import helps_pro as pro
+from src import helps_pro as pro
 import pandas as pd
 import os
 
